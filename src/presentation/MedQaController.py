@@ -1,19 +1,13 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
 from pathlib import Path
 
-from src.application.use_cases import BuildMedQaDatasetUseCase
-from src.infrastructure.curation import QARecordCurationService
-from src.infrastructure.json_dataset_writer import JsonDatasetWriter
-from src.infrastructure.medqa_sources_reader import MedQaSourcesReader
-
-
-@dataclass(frozen=True)
-class CommandOptions:
-    resources_dir: Path
-    output_path: Path
+from src.application.BuildMedQaDatasetUseCase import BuildMedQaDatasetUseCase
+from src.domain.CommandOptions import CommandOptions
+from src.infrastructure.QARecordCurationService import QARecordCurationService
+from src.infrastructure.JsonDatasetWriter import JsonDatasetWriter
+from src.infrastructure.MedQaSourcesReader import MedQaSourcesReader
 
 
 class MedQaController:

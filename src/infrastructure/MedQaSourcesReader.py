@@ -7,7 +7,7 @@ from typing import Any
 from typing import Iterable
 
 from src.application.ports import QARecordReader
-from src.domain.qa_record import QARecord
+from src.domain.QARecord import QARecord
 
 
 class MedQaSourcesReader(QARecordReader):

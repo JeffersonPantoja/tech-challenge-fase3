@@ -1,23 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Iterable
 
-from src.domain.qa_record import QARecord
-
-
-@dataclass(frozen=True)
-class CurationStats:
-    kept: int = 0
-    discarded_empty_fields: int = 0
-    discarded_duplicates: int = 0
-    discarded_too_short: int = 0
-
-
-@dataclass
-class CurationResult:
-    records: list[QARecord] = field(default_factory=list)
-    stats: CurationStats = field(default_factory=CurationStats)
+from src.domain.CurationResult import CurationResult
+from src.domain.CurationStats import CurationStats
+from src.domain.QARecord import QARecord
 
 
 class QARecordCurationService:

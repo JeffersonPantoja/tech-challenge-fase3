@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Iterable
 
-from src.domain.qa_record import QARecord
+from src.domain.QARecord import QARecord
 
 
 class QARecordReader(ABC):

@@ -1,18 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
-
 from src.application.ports import QARecordReader, QARecordWriter
-from src.infrastructure.curation import CurationStats, QARecordCurationService
-from src.domain.qa_record import QARecord
-
-
-@dataclass(frozen=True)
-class BuildDatasetResult:
-    records_count: int
-    output_path: Path
-    curation_stats: CurationStats
+from src.domain.BuildDatasetResult import BuildDatasetResult
+from src.domain.CurationStats import CurationStats
+from src.infrastructure.QARecordCurationService import QARecordCurationService
 
 
 class BuildMedQaDatasetUseCase:

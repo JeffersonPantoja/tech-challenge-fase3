@@ -13,6 +13,14 @@ O projeto prepara dados médicos para fine-tuning de LLM a partir de duas bases 
 
 ## Estrutura dos dados
 
+Os registros centrais do pipeline ficam em `src/domain/`:
+
+- `QARecord`
+- `CurationStats`
+- `CurationResult`
+- `CommandOptions`
+- `BuildDatasetResult`
+
 ### PubMedQA
 
 Arquivos atuais:

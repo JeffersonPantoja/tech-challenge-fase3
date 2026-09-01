@@ -8,6 +8,7 @@ Os datasets públicos usados no projeto não exigem anonimização pesada de LGP
 - A prioridade é limpar, padronizar e validar os registros.
 - O foco é qualidade do treino, não remoção de PII de pacientes reais.
 - A leitura dos datasets não usa LangChain por decisão de desempenho e memória; a curadoria opera sobre iteradores e parsing direto.
+- Os resultados da curadoria ficam em `CurationResult` e `CurationStats`, ambos no `domain`.
 
 ## Plano de implementação
 

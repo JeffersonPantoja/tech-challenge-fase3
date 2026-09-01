@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterable
 
 from src.application.ports import QARecordWriter
-from src.domain.qa_record import QARecord
+from src.domain.QARecord import QARecord
 
 
 class JsonDatasetWriter(QARecordWriter):

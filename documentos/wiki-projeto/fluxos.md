@@ -2,11 +2,12 @@
 
 ## Fluxo de dataset
 
-1. O controller lê os argumentos da CLI.
-2. O caso de uso chama o reader de fontes.
-3. O reader percorre `MedQuAD` e `PubMedQA` em modo incremental.
-4. Cada `QARecord` é convertido em `text` com marcadores.
-5. O writer grava o JSON final progressivamente em `resources/finetuning_qa.json`.
+1. O `MedQaController` lê os argumentos da CLI.
+2. O `BuildMedQaDatasetUseCase` chama o reader de fontes.
+3. O `MedQaSourcesReader` percorre `MedQuAD` e `PubMedQA` em modo incremental.
+4. O `QARecordCurationService` limpa e deduplica os registros.
+5. Cada `QARecord` é convertido em `text` com marcadores.
+6. O `JsonDatasetWriter` grava o JSON final progressivamente em `resources/finetuning_qa.json`.
 
 ## Formato final
 

@@ -1,4 +1,4 @@
-from src.presentation.medqa_controller import MedQaController
+from src.presentation.MedQaController import MedQaController
 
 
 def main() -> None:
