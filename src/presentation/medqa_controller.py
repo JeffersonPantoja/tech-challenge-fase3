@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from src.application.use_cases import BuildMedQaDatasetUseCase
+from src.infrastructure.curation import QARecordCurationService
 from src.infrastructure.json_dataset_writer import JsonDatasetWriter
 from src.infrastructure.medqa_sources_reader import MedQaSourcesReader
 
@@ -27,8 +28,15 @@ class MedQaController:
 
         reader = MedQaSourcesReader(options.resources_dir)
         writer = JsonDatasetWriter(options.output_path)
-        use_case = BuildMedQaDatasetUseCase(reader=reader, writer=writer)
+        curation_service = QARecordCurationService()
+        use_case = BuildMedQaDatasetUseCase(reader=reader, writer=writer, curation_service=curation_service)
         result = use_case.execute()
 
         print(f"Arquivos processados: {result.records_count}")
         print(f"Saída gerada em: {result.output_path}")
+        print(
+            "Curadoria: "
+            f"vazios={result.curation_stats.discarded_empty_fields}, "
+            f"duplicados={result.curation_stats.discarded_duplicates}, "
+            f"muito_curto={result.curation_stats.discarded_too_short}"
+        )

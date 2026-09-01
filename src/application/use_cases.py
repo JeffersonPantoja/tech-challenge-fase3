@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from src.application.ports import QARecordReader, QARecordWriter
+from src.infrastructure.curation import CurationStats, QARecordCurationService
 from src.domain.qa_record import QARecord
 
 
@@ -12,21 +12,20 @@ from src.domain.qa_record import QARecord
 class BuildDatasetResult:
     records_count: int
     output_path: Path
+    curation_stats: CurationStats
 
 
 class BuildMedQaDatasetUseCase:
-    def __init__(self, reader: QARecordReader, writer: QARecordWriter) -> None:
+    def __init__(self, reader: QARecordReader, writer: QARecordWriter, curation_service: QARecordCurationService) -> None:
         self._reader = reader
         self._writer = writer
+        self._curation_service = curation_service
 
     def execute(self) -> BuildDatasetResult:
-        records_count = 0
-
-        def counting_records() -> Iterable[QARecord]:
-            nonlocal records_count
-            for record in self._reader.read():
-                records_count += 1
-                yield record
-
-        output_path = self._writer.write(counting_records())
-        return BuildDatasetResult(records_count=records_count, output_path=output_path)
+        curated = self._curation_service.curate(self._reader.read())
+        output_path = self._writer.write(curated.records)
+        return BuildDatasetResult(
+            records_count=curated.stats.kept,
+            output_path=output_path,
+            curation_stats=curated.stats,
+        )

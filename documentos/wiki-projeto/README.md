@@ -18,6 +18,10 @@ Mem처ria ativa do projeto. Esta pasta concentra decis천es, vis찾o geral, conven�
 
 - [Padr천es](./padroes.md)
 
+## Curadoria
+
+- [Curadoria e Limpeza](./curadoria-limpeza.md)
+
 ## Regra de uso
 
 - Atualizar esta wiki sempre que houver decis찾o importante.
