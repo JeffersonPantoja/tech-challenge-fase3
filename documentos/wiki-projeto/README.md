@@ -13,6 +13,7 @@ Memória ativa do projeto. Esta pasta concentra decisões, visão geral, conven�
 ## Fluxos
 
 - [Fluxos](./fluxos.md)
+- [Notebook de Fine-tuning no Colab](../src/notebooks/fine-tuning-colab.ipynb)
 
 ## Padrões
 

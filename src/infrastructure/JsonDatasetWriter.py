@@ -15,20 +15,11 @@ class JsonDatasetWriter(QARecordWriter):
     def write(self, records: Iterable[QARecord]) -> Path:
         self._output_path.parent.mkdir(parents=True, exist_ok=True)
         with self._output_path.open("w", encoding="utf-8") as file:
-            file.write("[")
-            first = True
             for record in records:
                 item = {
                     "source": record.source,
                     "text": record.to_finetuning_text(),
                 }
-                if first:
-                    file.write("\n")
-                    first = False
-                else:
-                    file.write(",\n")
-                json.dump(item, file, ensure_ascii=False, indent=2)
-            if not first:
+                file.write(json.dumps(item, ensure_ascii=False))
                 file.write("\n")
-            file.write("]")
         return self._output_path

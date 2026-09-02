@@ -14,7 +14,7 @@ class MedQaController:
     def __init__(self) -> None:
         self._parser = argparse.ArgumentParser(description="Estrutura dados do MedQuAD e PubMedQA.")
         self._parser.add_argument("--resources-dir", default="resources")
-        self._parser.add_argument("--output", default="resources/finetuning_qa.json")
+        self._parser.add_argument("--output", default="resources/finetuning_qa.jsonl")
 
     def run(self) -> None:
         args = self._parser.parse_args()
