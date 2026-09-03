@@ -12,3 +12,4 @@ env/
 resources/MedQuAD/
 resources/pubmedqa/
 resources/finetuning_qa.json
+resources/finetuning_qa.jsonl

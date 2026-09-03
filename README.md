@@ -62,7 +62,7 @@ Notebook base: `src/notebooks/fine-tuning-colab.ipynb`
 - Dataset no Drive: mesmo tamanho do arquivo local, mais a cópia de backup que você mantiver.
 - Artefatos do treino no Drive: reserve de 2 GB a 8 GB.
 - Espaço no runtime do Colab: reserve pelo menos 12 GB livres para dependências, cache e checkpoints.
-- Se usar um modelo maior que o `TinyLlama`, aumente a folga de armazenamento e memória da GPU.
+- Se usar um modelo maior que o `LLaMA 3.2 1B`, aumente a folga de armazenamento e memória da GPU.
 
 ### Observações técnicas
 
