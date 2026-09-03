@@ -52,7 +52,7 @@ Notebook base: `src/notebooks/fine-tuning-colab.ipynb`
 1. Gere o dataset localmente com o comando acima.
 2. Envie `resources/finetuning_qa.jsonl` manualmente para o Google Drive.
 3. Abra o notebook no Colab e monte o Drive.
-4. Faça login no Hugging Face com um token com acesso ao modelo `meta-llama/Llama-3.2-1B-Instruct`.
+4. Defina o Secret `HF_TOKEN` no Colab com um token com acesso ao modelo `meta-llama/Llama-3.2-1B-Instruct`.
 5. Ajuste `DATASET_PATH` e `OUTPUT_DIR` para o caminho do seu Drive.
 6. Execute as células em ordem: dependências, Drive, autenticação HF, dataset, modelo, treino e teste.
 7. Salve o adapter/modelo final no Drive.
@@ -68,6 +68,7 @@ Notebook base: `src/notebooks/fine-tuning-colab.ipynb`
 ### Observações técnicas
 
 - O notebook usa QLoRA para reduzir o consumo de VRAM.
+- O notebook usa `unsloth` para baixar e preparar o modelo base, como na referência.
 - O notebook autentica no Hugging Face antes de baixar o modelo base.
 - O carregamento espera um arquivo JSONL com uma linha por exemplo.
 - O prompt final segue o formato `ANSWER THE QUESTION.` usado no dataset.
