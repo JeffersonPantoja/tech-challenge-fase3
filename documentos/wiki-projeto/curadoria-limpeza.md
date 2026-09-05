@@ -5,8 +5,9 @@ Os datasets públicos usados no projeto não exigem anonimização pesada de LGP
 ## Conclusão
 
 - `PubMedQA` e `MedQuAD` são bases públicas.
+- As bases usadas no projeto já chegam tratadas para uso acadêmico e sintético.
 - A prioridade é limpar, padronizar e validar os registros.
-- O foco é qualidade do treino, não remoção de PII de pacientes reais.
+- O foco é qualidade do treino, consistência e rastreabilidade.
 - A leitura dos datasets não usa LangChain por decisão de desempenho e memória; a curadoria opera sobre iteradores e parsing direto.
 - Os resultados da curadoria ficam em `CurationResult` e `CurationStats`, ambos no `domain`.
 

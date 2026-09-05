@@ -12,12 +12,13 @@
 ## Fluxo de fine-tuning no Colab
 
 1. O dataset `resources/finetuning_qa.jsonl` é enviado manualmente ao Google Drive.
-2. O notebook em `src/notebooks/fine-tuning-colab.ipynb` monta o Drive.
-3. O `datasets.load_dataset` lê o JSONL e separa treino e teste.
-4. O `transformers` carrega o modelo base em 4-bit.
-5. O `trl.SFTTrainer` aplica `LoRA` e executa o treinamento.
-6. O modelo ajustado e o tokenizer são salvos no Drive.
-7. Um prompt de validação é executado ao final do notebook.
+2. O notebook em `src/notebooks/fine-tuning-colab.ipynb` monta o Drive e autentica no Hugging Face com `HF_TOKEN`.
+3. O `datasets.load_dataset` lê o JSONL e separa treino e teste com `train_test_split`.
+4. O `unsloth.FastLanguageModel` carrega o `meta-llama/Llama-3.2-1B-Instruct` em 4-bit.
+5. O tokenizer processa o campo `text` e o notebook aplica `QLoRA` com `FastLanguageModel.get_peft_model`.
+6. O `trl.SFTTrainer` executa o treinamento com `TrainingArguments` e retomada de checkpoint quando existir.
+7. O modelo ajustado e o tokenizer são salvos no Drive.
+8. Um prompt de validação é executado ao final do notebook.
 
 ## Formato final
 

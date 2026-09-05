@@ -9,7 +9,7 @@ O projeto prepara dados médicos para fine-tuning de LLM a partir de duas bases 
 
 - `resources/MedQuAD/`: base XML obtida de `https://github.com/abachaa/MedQuAD`
 - `resources/pubmedqa/`: base JSON obtida de `https://pubmedqa.github.io/`
-- `resources/finetuning_qa.json`: dataset final gerado para treino
+- `resources/finetuning_qa.jsonl`: dataset final gerado para treino
 
 ## Estrutura dos dados
 
@@ -74,4 +74,5 @@ Objetivo do fluxo atual:
 1. Ler os dados brutos em `resources/`
 2. Extrair `question`, `answer` e `context`
 3. Converter cada item em texto único com marcadores
-4. Salvar o dataset final em JSON para treino supervisionado
+4. Salvar o dataset final em JSONL para treino supervisionado
+5. Consumir o JSONL no notebook `src/notebooks/fine-tuning-colab.ipynb` para executar o fine-tuning
