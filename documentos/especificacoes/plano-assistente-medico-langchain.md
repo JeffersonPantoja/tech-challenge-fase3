@@ -1,76 +1,67 @@
-# Plano Técnico - Assistente Médico com LangChain
+# Especificação - Criação de Assistente Médico com LangChain
 
 ## Objetivo
 
-Criar a segunda fase do projeto: um assistente médico baseado em LangChain, usando como motor principal o modelo fine-tuned salvo em `resources/medqa-finetuned-model`.
+Utilizar LangChain para criar um assistente médico que integre a LLM customizada e responda com base em dados estruturados e informações atualizadas do paciente.
 
 ## Referências
 
-- `documentos/especificacoes/requisitos-fine-tuning-llm-dados-medicos-internos.md`
-- `documentos/especificacoes/plano-fine-tuning-colab.md`
 - `documentos/wiki-referencia/langchain/README.md`
-- `documentos/wiki-referencia/Fine-tuning-rag-para-documentos/Aula-03-RAG-para-documentos/README.md`
-- `src/notebooks/fine-tuning-colab.ipynb`
+- `resources/medqa-finetuned-model`
 
 ## Escopo
 
-- Carregar localmente o modelo ajustado em `resources/medqa-finetuned-model`.
-- Criar a camada de orquestração com LangChain.
-- Definir prompt do assistente médico com instruções, contexto e restrições de segurança.
-- Manter histórico de conversa quando fizer sentido para a interação.
-- Estruturar o fluxo para futuras integrações com recuperação de documentos e ferramentas.
+- Construir um pipeline com LangChain integrando a LLM customizada.
+- Consultar base de dados estruturadas, como prontuários e registros.
+- Contextualizar as respostas com informações atualizadas do paciente.
 
 ## Fluxo Geral
 
-1. O aplicativo carrega o modelo fine-tuned local.
-2. O LangChain encapsula o modelo em uma cadeia de conversa.
-3. O prompt do sistema define papel, tom, limites e formato da resposta.
-4. O usuário envia perguntas clínicas ou operacionais.
-5. O assistente gera resposta com base no modelo e no contexto da conversa.
-6. Quando houver base documental, a cadeia pode consultar fontes adicionais antes de responder.
+1. O sistema carrega a LLM customizada.
+2. O LangChain orquestra a entrada do usuário, a consulta às bases estruturadas e a montagem do contexto.
+3. O pipeline recupera dados relevantes do paciente.
+4. A resposta é gerada pela LLM com base no contexto consolidado.
 
 ## Etapas do Projeto
 
-### T1 - Preparação do modelo local
+### T1 - Integração da LLM
 
 - Validar a presença de `resources/medqa-finetuned-model`.
-- Definir como o modelo será carregado no runtime local.
-- Confirmar compatibilidade com o fluxo de inferência escolhido.
+- Definir a forma de carregamento da LLM customizada no runtime.
+- Expor a LLM para uso pela camada LangChain.
 
-### T2 - Camada LangChain
+### T2 - Pipeline LangChain
 
-- Criar a abstração de orquestração com LangChain.
-- Centralizar prompt, memória e composição da resposta.
-- Manter o código desacoplado da origem do modelo.
+- Criar o pipeline de orquestração com LangChain.
+- Integrar a LLM customizada à cadeia de processamento.
+- Centralizar a composição da entrada e da saída do assistente.
 
-### T3 - Prompt e guardrails
+### T3 - Consulta a dados estruturados
 
-- Definir instruções de sistema para um assistente médico seguro.
-- Limitar o comportamento a orientação informativa e apoio clínico.
-- Preservar rastreabilidade do contexto quando houver uso de base externa.
+- Consultar prontuários e registros estruturados.
+- Selecionar os dados relevantes do paciente para a resposta.
+- Preservar rastreabilidade da origem dos dados consultados.
 
-### T4 - Conversa e recuperação de contexto
+### T4 - Contextualização da resposta
 
-- Implementar histórico de conversa quando útil.
-- Preparar a cadeia para integrar documentos internos ou base de conhecimento.
-- Permitir evolução para RAG sem refatoração grande.
+- Montar o contexto final com dados do paciente e a pergunta atual.
+- Gerar respostas contextualizadas pela LLM.
+- Manter o fluxo preparado para atualização contínua das informações do paciente.
 
 ### T5 - Validação
 
-- Testar o assistente com perguntas clínicas curtas e longas.
-- Verificar consistência, aderência ao prompt e uso correto do contexto.
-- Registrar limitações e casos em que o assistente deve recusar ou recomendar revisão humana.
+- Testar consultas com diferentes perfis de paciente e tipos de pergunta.
+- Verificar se a resposta usa os dados corretos do contexto.
+- Confirmar que a atualização das informações altera a resposta quando necessário.
 
 ### T6 - Documentação
 
 - Atualizar a wiki do projeto com o fluxo da nova fase.
-- Registrar decisões de arquitetura relevantes.
-- Manter o plano alinhado ao notebook/modelo gerado na fase anterior.
+- Registrar as decisões de integração e consulta aos dados.
 
 ## Critérios de Conclusão
 
-- O modelo `resources/medqa-finetuned-model` é usado como base do assistente.
-- A camada LangChain executa o fluxo de pergunta e resposta.
-- O prompt do assistente médico está definido e documentado.
-- O fluxo está pronto para expansão com memória e recuperação de documentos.
-- A documentação do projeto foi atualizada.
+- A LLM customizada está integrada ao LangChain.
+- O pipeline consulta dados estruturados do paciente.
+- As respostas são contextualizadas com informações atualizadas.
+- A documentação da fase foi atualizada.

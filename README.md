@@ -32,6 +32,12 @@ Gerar o dataset final:
 python3 -m src.main --resources-dir resources --output resources/finetuning_qa.jsonl
 ```
 
+Carregar o assistente médico com LangChain:
+
+```bash
+python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model
+```
+
 ### Saída
 
 O arquivo gerado será um JSONL com uma linha por registro no formato:

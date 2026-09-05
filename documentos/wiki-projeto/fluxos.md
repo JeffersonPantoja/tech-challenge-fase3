@@ -20,6 +20,14 @@
 7. O modelo ajustado e o tokenizer são salvos no Drive.
 8. Um prompt de validação é executado ao final do notebook.
 
+## Fluxo do assistente médico
+
+1. O `MedicalAssistantController` lê os argumentos da CLI.
+2. O `LoadMedicalAssistantUseCase` valida o diretório do modelo local.
+3. O `LocalMedicalAssistantRuntimeLoader` carrega o tokenizer e a LLM customizada.
+4. A LLM é exposta ao LangChain via `HuggingFacePipeline`.
+5. O terminal recebe a confirmação de que o runtime está pronto para uso.
+
 ## Formato final
 
 ```text

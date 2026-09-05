@@ -1,3 +1,9 @@
 langchain
 langchain-community
 python-dotenv
+torch
+transformers
+peft
+accelerate
+bitsandbytes
+sentencepiece

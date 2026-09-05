@@ -7,8 +7,11 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - `domain`: entidade `QARecord`
 - `domain`: `QARecord`, `CurationStats`, `CurationResult`, `CommandOptions` e `BuildDatasetResult`
 - `application`: portas e caso de uso `BuildMedQaDatasetUseCase`
+- `application`: portas e caso de uso `LoadMedicalAssistantUseCase`
 - `infrastructure`: leitores dos dados, curadoria e writer do JSONL final
+- `infrastructure`: loader local da LLM customizada para o assistente médico
 - `presentation`: controller de linha de comando `MedQaController`
+- `presentation`: controller de linha de comando `MedicalAssistantController`
 
 ## Decisões
 
@@ -20,4 +23,5 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - A leitura dos datasets foi mantida fora do LangChain para reduzir custo de abstração, melhorar desempenho e evitar consumo excessivo de memória.
 - A curadoria foi isolada em `QARecordCurationService` para aplicar limpeza, deduplicação e métricas de descarte antes da escrita final.
 - O treino fica concentrado no notebook `src/notebooks/fine-tuning-colab.ipynb`, que usa `unsloth`, `datasets`, `transformers` e `trl.SFTTrainer` com QLoRA.
+- O assistente médico da fase 2 carrega a LLM local com `AutoPeftModelForCausalLM` e a expõe via `HuggingFacePipeline` para integração com LangChain.
 - Os módulos do projeto seguem nomes CamelCase para refletir diretamente as classes exportadas.
