@@ -27,7 +27,7 @@
 3. O `LocalMedicalAssistantRuntimeLoader` carrega o tokenizer e a LLM customizada a partir do modelo local mesclado.
 4. O `LangChainMedicalAssistantResponseGenerator` monta o prompt e a cadeia de resposta.
 5. O `AskMedicalAssistantUseCase` envia apenas a pergunta normalizada para a cadeia.
-6. A LLM é exposta ao LangChain via `HuggingFacePipeline`.
+6. A LLM é exposta ao LangChain por uma função local que chama `model.generate` diretamente.
 7. O `MedicalAssistantController` registra pergunta e resposta em memória local da sessão.
 
 ## Fluxo do notebook no Colab

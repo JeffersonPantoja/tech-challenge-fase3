@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from langchain_community.llms import HuggingFacePipeline
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, pipeline
+from langchain_core.runnables import RunnableLambda
+from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
 from src.application.ports import MedicalAssistantRuntimeLoader
 from src.domain.MedicalAssistantCommandOptions import MedicalAssistantCommandOptions
@@ -39,16 +39,21 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
         model.generation_config.max_new_tokens = 128
         model.generation_config.do_sample = False
         model.generation_config.repetition_penalty = 1.05
+        model.generation_config.temperature = 1.0
+        model.generation_config.top_p = None
+        model.generation_config.max_length = None
         model.eval()
 
-        text_generation_pipeline = pipeline(
-            task="text-generation",
-            model=model,
-            tokenizer=tokenizer,
-            return_full_text=False,
-        )
+        def generate_text(prompt_value: object) -> str:
+            prompt_text = prompt_value.to_string() if hasattr(prompt_value, "to_string") else str(prompt_value)
+            inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
+            with torch.inference_mode():
+                output_ids = model.generate(**inputs)
 
-        llm = HuggingFacePipeline(pipeline=text_generation_pipeline)
+            generated_ids = output_ids[0][inputs["input_ids"].shape[-1] :]
+            return tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+
+        llm = RunnableLambda(generate_text)
         return MedicalAssistantRuntime(
             model_dir=Path(options.model_dir),
             base_model_name=options.base_model_name,
