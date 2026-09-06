@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from textwrap import fill
 
 from src.application.AskMedicalAssistantUseCase import AskMedicalAssistantUseCase
 from src.application.LoadMedicalAssistantUseCase import LoadMedicalAssistantUseCase
@@ -61,20 +60,4 @@ class MedicalAssistantController:
             answer = use_case.execute(question)
             conversation.add_user_message(question)
             conversation.add_assistant_message(answer)
-            print("\nResposta:")
-            print(self._format_text(answer))
-
-    def _format_text(self, text: str, width: int = 88) -> str:
-        paragraphs = [part.strip() for part in text.splitlines()]
-        wrapped = [
-            fill(
-                paragraph,
-                width=width,
-                break_long_words=False,
-                break_on_hyphens=False,
-            )
-            if paragraph
-            else ""
-            for paragraph in paragraphs
-        ]
-        return "\n".join(wrapped)
+            print(f"\nResposta: {answer}")
