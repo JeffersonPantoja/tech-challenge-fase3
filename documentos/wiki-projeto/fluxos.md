@@ -25,8 +25,10 @@
 1. O `MedicalAssistantController` lê os argumentos da CLI.
 2. O `LoadMedicalAssistantUseCase` valida o diretório do modelo local.
 3. O `LocalMedicalAssistantRuntimeLoader` carrega o tokenizer e a LLM customizada.
-4. A LLM é exposta ao LangChain via `HuggingFacePipeline`.
-5. O terminal recebe a confirmação de que o runtime está pronto para uso.
+4. O `LangChainMedicalAssistantResponseGenerator` monta o prompt e a cadeia de resposta.
+5. O `AskMedicalAssistantUseCase` envia apenas a pergunta normalizada para a cadeia.
+6. A LLM é exposta ao LangChain via `HuggingFacePipeline`.
+7. O `MedicalAssistantController` registra pergunta e resposta em memória local da sessão.
 
 ## Formato final
 

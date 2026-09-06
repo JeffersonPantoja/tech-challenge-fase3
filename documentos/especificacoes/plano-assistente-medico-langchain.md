@@ -35,6 +35,7 @@ Utilizar LangChain para criar um assistente médico que integre a LLM customizad
 - Criar o pipeline de orquestração com LangChain.
 - Integrar a LLM customizada à cadeia de processamento.
 - Centralizar a composição da entrada e da saída do assistente.
+- Responder perguntas através do modelo carregado
 
 ### T3 - Consulta a dados estruturados
 

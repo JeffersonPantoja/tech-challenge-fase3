@@ -19,6 +19,7 @@ Memória ativa do projeto. Esta pasta concentra decisões, visão geral, conven�
 
 - [Plano Fine-tuning no Colab](../especificacoes/plano-fine-tuning-colab.md)
 - [Plano Assistente Médico com LangChain](../especificacoes/plano-assistente-medico-langchain.md)
+- [Plano de Correção do Assistente Médico com LangChain](../especificacoes/plano-correcao-assistente-medico-langchain.md)
 
 ## Padrões
 

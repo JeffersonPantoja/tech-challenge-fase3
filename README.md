@@ -38,6 +38,12 @@ Carregar o assistente médico com LangChain:
 python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model
 ```
 
+Pergunta inicial com sessão aberta:
+
+```bash
+python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model --question "Qual a conduta para febre?"
+```
+
 ### Saída
 
 O arquivo gerado será um JSONL com uma linha por registro no formato:

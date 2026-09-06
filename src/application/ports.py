@@ -25,3 +25,9 @@ class MedicalAssistantRuntimeLoader(ABC):
     @abstractmethod
     def load(self, options: MedicalAssistantCommandOptions) -> MedicalAssistantRuntime:
         raise NotImplementedError
+
+
+class MedicalAssistantResponseGenerator(ABC):
+    @abstractmethod
+    def generate(self, question: str) -> str:
+        raise NotImplementedError
