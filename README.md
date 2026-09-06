@@ -101,7 +101,7 @@ Notebook: `src/notebooks/medical-assistant-colab.ipynb`
 
 1. Monte o Google Drive.
 2. Clone o repositório por HTTPS em uma célula separada para permitir atualizações.
-3. Aponte `MODEL_PATH` para o diretório do modelo mesclado no Drive, se o caminho padrão não servir.
+3. Aponte `MODEL_PATH` para o diretório do modelo mesclado no Drive, garantindo que existam `config.json` e `model.safetensors`.
 4. Instale as dependências inline no próprio notebook.
 5. O notebook instancia `LoadMedicalAssistantUseCase` e `AskMedicalAssistantUseCase` diretamente.
 6. Execute o loop interativo no próprio notebook.

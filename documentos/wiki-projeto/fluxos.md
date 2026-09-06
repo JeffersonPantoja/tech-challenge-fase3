@@ -34,7 +34,7 @@
 
 1. O Colab monta o Google Drive.
 2. O notebook clona o repositório por HTTPS em uma célula separada para permitir atualização.
-3. O notebook aponta `MODEL_PATH` para o modelo mesclado salvo no Drive.
+3. O notebook aponta `MODEL_PATH` para o modelo mesclado salvo no Drive, que precisa conter `config.json` e `model.safetensors`.
 4. O notebook instala as dependências inline no próprio Colab.
 5. Os usecases são instanciados diretamente no notebook.
 6. O loop interativo faz chamadas diretas a `AskMedicalAssistantUseCase`.

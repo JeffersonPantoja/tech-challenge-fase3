@@ -4,6 +4,7 @@ from pathlib import Path
 
 from langchain_community.llms import HuggingFacePipeline
 from peft import AutoPeftModelForCausalLM
+import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 from src.application.ports import MedicalAssistantRuntimeLoader
@@ -18,12 +19,23 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
             tokenizer.pad_token = tokenizer.eos_token
 
         if options.use_local_model:
+            if not (options.model_dir / "config.json").exists():
+                raise FileNotFoundError(
+                    f"Modelo local mesclado não encontrado em {options.model_dir}. "
+                    "Rerode o notebook de fine-tuning para gerar o modelo completo."
+                )
+
+            if torch.cuda.is_available():
+                dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            else:
+                dtype = torch.float32
             model = AutoModelForCausalLM.from_pretrained(
                 str(options.model_dir),
-                device_map="auto",
-                low_cpu_mem_usage=True,
+                torch_dtype=dtype,
                 local_files_only=True,
             )
+            if torch.cuda.is_available():
+                model = model.to("cuda")
         else:
             model = AutoPeftModelForCausalLM.from_pretrained(
                 str(options.model_dir),
