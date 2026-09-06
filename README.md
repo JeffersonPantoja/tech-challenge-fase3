@@ -1,6 +1,13 @@
 # Tech Challenge - Fase 3
 
-Projeto em Python para estruturar dados médicos e gerar dataset de fine-tuning a partir de `MedQuAD` e `PubMedQA`.
+Projeto em Python para preparar dados médicos, fazer fine-tuning e usar um assistente médico com LangChain.
+
+## Fluxo do Projeto
+
+1. Gerar o dataset local em JSONL a partir de `MedQuAD` e `PubMedQA`.
+2. Executar o fine-tuning no Colab e salvar o modelo mesclado no Google Drive.
+3. Usar o assistente médico localmente no terminal com o modelo mesclado.
+4. Usar o assistente médico no Colab chamando os usecases diretamente.
 
 ## Estrutura
 
@@ -33,12 +40,6 @@ python3 -m src.main --resources-dir resources --output resources/finetuning_qa.j
 ```
 
 Carregar o assistente médico com LangChain:
-
-```bash
-python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model
-```
-
-Usar o modelo mesclado local:
 
 ```bash
 python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model

@@ -1,6 +1,8 @@
 # Visão Geral
 
-O projeto prepara dados médicos para fine-tuning de LLM a partir de duas bases principais:
+O projeto prepara dados médicos para fine-tuning de LLM e usa o modelo resultante em um assistente médico com LangChain.
+
+O fluxo geral começa com duas bases principais:
 
 - `MedQuAD`, em XML com pares de pergunta e resposta
 - `PubMedQA`, em JSON com pergunta, contexto e resposta
@@ -76,3 +78,4 @@ Objetivo do fluxo atual:
 3. Converter cada item em texto único com marcadores
 4. Salvar o dataset final em JSONL para treino supervisionado
 5. Consumir o JSONL no notebook `src/notebooks/fine-tuning-colab.ipynb` para executar o fine-tuning
+6. Salvar o modelo mesclado no Google Drive e usá-lo no assistente médico interativo
