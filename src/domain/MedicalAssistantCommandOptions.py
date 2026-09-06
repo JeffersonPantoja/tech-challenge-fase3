@@ -6,3 +6,4 @@ from pathlib import Path
 class MedicalAssistantCommandOptions:
     model_dir: Path
     base_model_name: str | None = None
+    use_local_model: bool = False

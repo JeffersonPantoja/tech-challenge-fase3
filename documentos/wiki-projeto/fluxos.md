@@ -24,11 +24,20 @@
 
 1. O `MedicalAssistantController` lê os argumentos da CLI.
 2. O `LoadMedicalAssistantUseCase` valida o diretório do modelo local.
-3. O `LocalMedicalAssistantRuntimeLoader` carrega o tokenizer e a LLM customizada.
+3. O `LocalMedicalAssistantRuntimeLoader` carrega o tokenizer e a LLM customizada, escolhendo entre modelo local mesclado e adapter.
 4. O `LangChainMedicalAssistantResponseGenerator` monta o prompt e a cadeia de resposta.
 5. O `AskMedicalAssistantUseCase` envia apenas a pergunta normalizada para a cadeia.
 6. A LLM é exposta ao LangChain via `HuggingFacePipeline`.
 7. O `MedicalAssistantController` registra pergunta e resposta em memória local da sessão.
+
+## Fluxo do notebook no Colab
+
+1. O Colab monta o Google Drive.
+2. O notebook clona o repositório por HTTPS em uma célula separada para permitir atualização.
+3. O notebook aponta `MODEL_PATH` para o modelo mesclado salvo no Drive.
+4. O notebook instala as dependências inline no próprio Colab.
+5. Os usecases são instanciados diretamente no notebook.
+6. O loop interativo faz chamadas diretas a `AskMedicalAssistantUseCase`.
 
 ## Formato final
 

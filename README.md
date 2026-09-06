@@ -38,6 +38,12 @@ Carregar o assistente médico com LangChain:
 python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model
 ```
 
+Usar o modelo mesclado local:
+
+```bash
+python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model --use-local-model true
+```
+
 Pergunta inicial com sessão aberta:
 
 ```bash
@@ -86,6 +92,19 @@ Notebook base: `src/notebooks/fine-tuning-colab.ipynb`
 - O notebook autentica no Hugging Face antes de baixar o modelo base.
 - O carregamento espera um arquivo JSONL com uma linha por exemplo.
 - O prompt final segue o formato `ANSWER THE QUESTION.` usado no dataset.
+
+## Assistente Médico no Colab
+
+Notebook: `src/notebooks/medical-assistant-colab.ipynb`
+
+### Fluxo
+
+1. Monte o Google Drive.
+2. Clone o repositório por HTTPS em uma célula separada para permitir atualizações.
+3. Aponte `MODEL_PATH` para o diretório do modelo mesclado no Drive, se o caminho padrão não servir.
+4. Instale as dependências inline no próprio notebook.
+5. O notebook instancia `LoadMedicalAssistantUseCase` e `AskMedicalAssistantUseCase` diretamente.
+6. Execute o loop interativo no próprio notebook.
 
 ## Fontes de dados
 

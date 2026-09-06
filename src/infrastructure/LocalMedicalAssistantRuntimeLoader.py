@@ -17,8 +17,7 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
         if tokenizer.pad_token is None and tokenizer.eos_token is not None:
             tokenizer.pad_token = tokenizer.eos_token
 
-        merged_model_path = options.model_dir / "config.json"
-        if merged_model_path.exists():
+        if options.use_local_model:
             model = AutoModelForCausalLM.from_pretrained(
                 str(options.model_dir),
                 device_map="auto",
@@ -37,8 +36,9 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
             task="text-generation",
             model=model,
             tokenizer=tokenizer,
-            max_new_tokens=128,
+            max_new_tokens=256,
             do_sample=False,
+            repetition_penalty=1.05,
             return_full_text=False,
         )
 

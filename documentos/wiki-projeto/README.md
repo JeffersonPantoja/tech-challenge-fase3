@@ -14,6 +14,7 @@ Memória ativa do projeto. Esta pasta concentra decisões, visão geral, conven�
 
 - [Fluxos](./fluxos.md)
 - [Notebook de Fine-tuning no Colab](../../src/notebooks/fine-tuning-colab.ipynb)
+- [Notebook de Assistente Médico no Colab](../../src/notebooks/medical-assistant-colab.ipynb)
 
 ## Especificações
 
