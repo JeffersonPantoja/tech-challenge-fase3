@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from textwrap import fill
 
 from src.application.AskMedicalAssistantUseCase import AskMedicalAssistantUseCase
 from src.application.LoadMedicalAssistantUseCase import LoadMedicalAssistantUseCase
@@ -16,7 +17,6 @@ class MedicalAssistantController:
         self._parser = argparse.ArgumentParser(description="Carrega a LLM customizada para o assistente médico.")
         self._parser.add_argument("--model-dir", default="resources/medqa-finetuned-model")
         self._parser.add_argument("--base-model", default=None)
-        self._parser.add_argument("--question", default=None, help="Pergunta inicial opcional; a sessão continua em modo interativo.")
 
     def run(self) -> None:
         args = self._parser.parse_args()
@@ -38,21 +38,7 @@ class MedicalAssistantController:
         print(f"LLM LangChain: {runtime.pipeline_type}")
         print(f"Tokenizer: {runtime.tokenizer_name}")
 
-        if args.question:
-            self._ask_once(args.question, ask_use_case, conversation)
-
         self._interactive_loop(ask_use_case, conversation)
-
-    def _ask_once(
-        self,
-        question: str,
-        use_case: AskMedicalAssistantUseCase,
-        conversation: MedicalAssistantConversation,
-    ) -> None:
-        answer = use_case.execute(question)
-        conversation.add_user_message(question)
-        conversation.add_assistant_message(answer)
-        print(f"\nResposta: {answer}")
 
     def _interactive_loop(
         self,
@@ -62,7 +48,7 @@ class MedicalAssistantController:
         print("Digite uma pergunta ou 'sair' para encerrar.")
         while True:
             try:
-                question = input("Pergunta: ").strip()
+                question = input("\nPergunta: ").strip()
             except (EOFError, KeyboardInterrupt):
                 print()
                 break
@@ -75,4 +61,20 @@ class MedicalAssistantController:
             answer = use_case.execute(question)
             conversation.add_user_message(question)
             conversation.add_assistant_message(answer)
-            print(f"Resposta: {answer}")
+            print("\nResposta:")
+            print(self._format_text(answer))
+
+    def _format_text(self, text: str, width: int = 88) -> str:
+        paragraphs = [part.strip() for part in text.splitlines()]
+        wrapped = [
+            fill(
+                paragraph,
+                width=width,
+                break_long_words=False,
+                break_on_hyphens=False,
+            )
+            if paragraph
+            else ""
+            for paragraph in paragraphs
+        ]
+        return "\n".join(wrapped)

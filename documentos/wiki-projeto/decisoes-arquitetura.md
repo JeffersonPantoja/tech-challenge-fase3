@@ -27,6 +27,6 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - O treino fica concentrado no notebook `src/notebooks/fine-tuning-colab.ipynb`, que usa `unsloth`, `datasets`, `transformers` e `trl.SFTTrainer` com QLoRA.
 - O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.
 - A inferência reutiliza o template textual do dataset (`ANSWER THE QUESTION`, `Context`, `Question`, `Answer`) para reduzir desalinhamento entre treino e uso.
-- A interação do assistente acontece pelo terminal, com suporte a pergunta única via `--question` e modo interativo.
+- A interação do assistente acontece pelo terminal em modo interativo.
 - A conversa da sessão fica restrita ao controlador e não entra no prompt de geração.
 - Os módulos do projeto seguem nomes CamelCase para refletir diretamente as classes exportadas.
