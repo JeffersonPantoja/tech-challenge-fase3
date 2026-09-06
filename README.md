@@ -41,7 +41,7 @@ python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model
 Usar o modelo mesclado local:
 
 ```bash
-python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model --use-local-model true
+python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model
 ```
 
 Pergunta inicial com sessão aberta:
@@ -88,7 +88,7 @@ Notebook base: `src/notebooks/fine-tuning-colab.ipynb`
 - O notebook usa QLoRA para reduzir o consumo de VRAM.
 - O notebook usa `unsloth` para baixar e preparar o modelo base, como na referência.
 - O notebook faz merge do adapter após o treino e salva o modelo completo no diretório final.
-- O runtime prefere esse modelo completo e mantém compatibilidade com o adapter anterior até o notebook ser rerodado.
+- O runtime usa sempre o modelo local mesclado salvo no Drive.
 - O notebook autentica no Hugging Face antes de baixar o modelo base.
 - O carregamento espera um arquivo JSONL com uma linha por exemplo.
 - O prompt final segue o formato `ANSWER THE QUESTION.` usado no dataset.

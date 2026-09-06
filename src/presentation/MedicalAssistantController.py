@@ -16,7 +16,6 @@ class MedicalAssistantController:
         self._parser = argparse.ArgumentParser(description="Carrega a LLM customizada para o assistente médico.")
         self._parser.add_argument("--model-dir", default="resources/medqa-finetuned-model")
         self._parser.add_argument("--base-model", default=None)
-        self._parser.add_argument("--use-local-model", type=self._parse_bool, default=False, help="Use o modelo mesclado local quando true.")
         self._parser.add_argument("--question", default=None, help="Pergunta inicial opcional; a sessão continua em modo interativo.")
 
     def run(self) -> None:
@@ -24,7 +23,6 @@ class MedicalAssistantController:
         options = MedicalAssistantCommandOptions(
             model_dir=Path(args.model_dir),
             base_model_name=args.base_model,
-            use_local_model=args.use_local_model,
         )
 
         loader = LocalMedicalAssistantRuntimeLoader()
@@ -37,7 +35,6 @@ class MedicalAssistantController:
 
         print(f"Modelo carregado em: {runtime.model_dir}")
         print(f"Base model: {runtime.base_model_name or 'auto'}")
-        print(f"Modelo local: {options.use_local_model}")
         print(f"LLM LangChain: {runtime.pipeline_type}")
         print(f"Tokenizer: {runtime.tokenizer_name}")
 
@@ -79,11 +76,3 @@ class MedicalAssistantController:
             conversation.add_user_message(question)
             conversation.add_assistant_message(answer)
             print(f"Resposta: {answer}")
-
-    def _parse_bool(self, value: str) -> bool:
-        normalized = value.strip().lower()
-        if normalized in {"true", "1", "yes", "y", "on"}:
-            return True
-        if normalized in {"false", "0", "no", "n", "off"}:
-            return False
-        raise argparse.ArgumentTypeError("Use true ou false para --use-local-model")

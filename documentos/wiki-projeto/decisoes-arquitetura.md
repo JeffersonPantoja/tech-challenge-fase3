@@ -25,7 +25,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - A leitura dos datasets foi mantida fora do LangChain para reduzir custo de abstração, melhorar desempenho e evitar consumo excessivo de memória.
 - A curadoria foi isolada em `QARecordCurationService` para aplicar limpeza, deduplicação e métricas de descarte antes da escrita final.
 - O treino fica concentrado no notebook `src/notebooks/fine-tuning-colab.ipynb`, que usa `unsloth`, `datasets`, `transformers` e `trl.SFTTrainer` com QLoRA.
-- O assistente médico da fase 2 pode carregar o modelo local mesclado ou o adapter, dependendo da flag `--use-local-model`.
+- O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.
 - A inferência reutiliza o template textual do dataset (`ANSWER THE QUESTION`, `Context`, `Question`, `Answer`) para reduzir desalinhamento entre treino e uso.
 - A interação do assistente acontece pelo terminal, com suporte a pergunta única via `--question` e modo interativo.
 - A conversa da sessão fica restrita ao controlador e não entra no prompt de geração.

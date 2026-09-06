@@ -29,8 +29,8 @@ Ajustar a implementação da fase 2 para que a inferência fique mais coerente c
 ### T3 - Ajuste da T1
 
 - O notebook salva o modelo completo após o merge do adapter no base model.
-- A inferência prioriza o diretório local final e mantém compatibilidade transitória com o adapter antigo.
-- A documentação deve refletir que o runtime usa o modelo mesclado quando disponível.
+- A inferência usa sempre o diretório local final.
+- A documentação deve refletir que o runtime não depende mais do adapter em execução.
 
 ### T4 - Revisão da CLI
 
