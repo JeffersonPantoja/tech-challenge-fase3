@@ -17,7 +17,7 @@
 4. O `unsloth.FastLanguageModel` carrega o `meta-llama/Llama-3.2-1B-Instruct` em 4-bit.
 5. O tokenizer processa o campo `text` e o notebook aplica `QLoRA` com `FastLanguageModel.get_peft_model`.
 6. O `trl.SFTTrainer` executa o treinamento com `TrainingArguments` e retomada de checkpoint quando existir.
-7. O modelo ajustado e o tokenizer são salvos no Drive.
+7. O adapter é mesclado no modelo base e o modelo completo é salvo no diretório final.
 8. Um prompt de validação é executado ao final do notebook.
 
 ## Fluxo do assistente médico

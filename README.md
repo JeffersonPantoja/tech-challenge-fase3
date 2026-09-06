@@ -67,7 +67,7 @@ Notebook base: `src/notebooks/fine-tuning-colab.ipynb`
 4. Defina o Secret `HF_TOKEN` no Colab com um token com acesso ao modelo `meta-llama/Llama-3.2-1B-Instruct`.
 5. Ajuste `DATASET_PATH` e `OUTPUT_DIR` para o caminho do seu Drive.
 6. Execute as células em ordem: dependências, Drive, autenticação HF, dataset, modelo, treino e teste.
-7. Salve o adapter/modelo final no Drive.
+7. O notebook faz merge do adapter e salva o modelo completo no diretório final.
 
 ### Requisitos de armazenamento
 
@@ -81,6 +81,8 @@ Notebook base: `src/notebooks/fine-tuning-colab.ipynb`
 
 - O notebook usa QLoRA para reduzir o consumo de VRAM.
 - O notebook usa `unsloth` para baixar e preparar o modelo base, como na referência.
+- O notebook faz merge do adapter após o treino e salva o modelo completo no diretório final.
+- O runtime prefere esse modelo completo e mantém compatibilidade com o adapter anterior até o notebook ser rerodado.
 - O notebook autentica no Hugging Face antes de baixar o modelo base.
 - O carregamento espera um arquivo JSONL com uma linha por exemplo.
 - O prompt final segue o formato `ANSWER THE QUESTION.` usado no dataset.

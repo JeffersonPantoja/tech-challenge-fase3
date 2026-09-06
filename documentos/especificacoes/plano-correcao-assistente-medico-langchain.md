@@ -28,9 +28,9 @@ Ajustar a implementação da fase 2 para que a inferência fique mais coerente c
 
 ### T3 - Ajuste da T1
 
-- Definir se o artefato `resources/medqa-finetuned-model` depende do base model externo.
-- Se a dependência permanecer, documentar essa limitação.
-- Se necessário, planejar a consolidação do modelo em uma etapa posterior.
+- O notebook salva o modelo completo após o merge do adapter no base model.
+- A inferência prioriza o diretório local final e mantém compatibilidade transitória com o adapter antigo.
+- A documentação deve refletir que o runtime usa o modelo mesclado quando disponível.
 
 ### T4 - Revisão da CLI
 
