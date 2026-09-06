@@ -13,7 +13,13 @@ from src.domain.MedicalAssistantRuntime import MedicalAssistantRuntime
 
 class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
     def load(self, options: MedicalAssistantCommandOptions) -> MedicalAssistantRuntime:
-        tokenizer = AutoTokenizer.from_pretrained(str(options.model_dir), use_fast=True, local_files_only=True, fix_mistral_regex=True)
+        tokenizer = AutoTokenizer.from_pretrained(
+            str(options.model_dir),
+            use_fast=True,
+            local_files_only=True,
+            fix_mistral_regex=True,
+            clean_up_tokenization_spaces=False,
+        )
         if tokenizer.pad_token is None and tokenizer.eos_token is not None:
             tokenizer.pad_token = tokenizer.eos_token
 
@@ -51,7 +57,11 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
                 output_ids = model.generate(**inputs)
 
             generated_ids = output_ids[0][inputs["input_ids"].shape[-1] :]
-            return tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+            return tokenizer.decode(
+                generated_ids,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=False,
+            ).strip()
 
         llm = RunnableLambda(generate_text)
         return MedicalAssistantRuntime(
