@@ -1,6 +1,6 @@
 # Curadoria e Limpeza
 
-Os datasets públicos usados no projeto não exigem anonimização pesada de LGPD, mas exigem curadoria técnica antes do fine-tuning.
+Os datasets públicos usados no projeto não exigem anonimização pesada de LGPD, mas exigem curadoria técnica antes do fine-tuning e da geração de prontuários sintéticos.
 
 ## Conclusão
 
@@ -9,6 +9,7 @@ Os datasets públicos usados no projeto não exigem anonimização pesada de LGP
 - A prioridade é limpar, padronizar e validar os registros.
 - O foco é qualidade do treino, consistência e rastreabilidade.
 - A leitura dos datasets não usa LangChain por decisão de desempenho e memória; a curadoria opera sobre iteradores e parsing direto.
+- Os registros limpos também podem ser enviados para uma etapa de geração de prontuários fictícios via OpenAI API.
 - Os resultados da curadoria ficam em `CurationResult` e `CurationStats`, ambos no `domain`.
 
 ## Plano de implementação

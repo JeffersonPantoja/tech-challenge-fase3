@@ -30,6 +30,14 @@
 6. A LLM é exposta ao LangChain por uma função local que chama `model.generate` diretamente.
 7. O `MedicalAssistantController` registra pergunta e resposta em memória local da sessão.
 
+## Fluxo de prontuários sintéticos
+
+1. A T3 usa registros de `MedQuAD` e `PubMedQA` como fonte de origem.
+2. Cada item preserva o `source` do dataset original para rastreabilidade.
+3. A API da OpenAI transforma o conteúdo de origem em um prontuário fictício estruturado.
+4. O prontuário é salvo em JSONL para consumo posterior pelo assistente.
+5. A estrutura do prontuário deve permanecer consistente entre as fontes para facilitar consulta e validação.
+
 ## Fluxo do notebook no Colab
 
 1. O Colab monta o Google Drive.

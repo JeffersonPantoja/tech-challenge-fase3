@@ -10,6 +10,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - `application`: portas e caso de uso `LoadMedicalAssistantUseCase`
 - `application`: portas e caso de uso `AskMedicalAssistantUseCase`
 - `infrastructure`: leitores dos dados, curadoria e writer do JSONL final
+- `infrastructure`: gerador de prontuários sintéticos via API da OpenAI
 - `infrastructure`: loader local da LLM customizada para o assistente médico
 - `infrastructure`: gerador LangChain da resposta do assistente
 - `presentation`: controller de linha de comando `MedQaController`
@@ -25,6 +26,8 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - A leitura dos datasets foi mantida fora do LangChain para reduzir custo de abstração, melhorar desempenho e evitar consumo excessivo de memória.
 - A curadoria foi isolada em `QARecordCurationService` para aplicar limpeza, deduplicação e métricas de descarte antes da escrita final.
 - O treino fica concentrado no notebook `src/notebooks/fine-tuning-colab.ipynb`, que usa `unsloth`, `datasets`, `transformers` e `trl.SFTTrainer` com QLoRA.
+- A T3 gera prontuários fictícios a partir de `MedQuAD` e `PubMedQA`, preservando `source` para rastreabilidade.
+- A escrita dos prontuários sintéticos é em JSONL para facilitar consumo posterior pelo assistente.
 - O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.
 - A inferência reutiliza o template textual do dataset (`ANSWER THE QUESTION`, `Context`, `Question`, `Answer`) para reduzir desalinhamento entre treino e uso.
 - A interação do assistente acontece pelo terminal em modo interativo.

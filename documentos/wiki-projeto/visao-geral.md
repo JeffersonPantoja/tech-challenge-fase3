@@ -2,7 +2,7 @@
 
 O projeto prepara dados médicos para fine-tuning de LLM e usa o modelo resultante em um assistente médico com LangChain.
 
-O fluxo geral começa com duas bases principais:
+O fluxo geral começa com duas bases principais, que também servem como origem para prontuários sintéticos:
 
 - `MedQuAD`, em XML com pares de pergunta e resposta
 - `PubMedQA`, em JSON com pergunta, contexto e resposta
@@ -12,6 +12,7 @@ O fluxo geral começa com duas bases principais:
 - `resources/MedQuAD/`: base XML obtida de `https://github.com/abachaa/MedQuAD`
 - `resources/pubmedqa/`: base JSON obtida de `https://pubmedqa.github.io/`
 - `resources/finetuning_qa.jsonl`: dataset final gerado para treino
+- `resources/patient_records.jsonl`: base sintética planejada para prontuários fictícios
 
 ## Estrutura dos dados
 
@@ -56,6 +57,8 @@ Os arquivos são XML com estrutura semelhante a:
 
 Cada `QAPair` é convertido em um registro de treino com `question`, `answer` e `context` opcional.
 
+Na T3, os mesmos identificadores de origem podem ser usados como chave para gerar um prontuário sintético correspondente via API da OpenAI.
+
 Pastas atuais dentro de `resources/MedQuAD/`:
 
 - `1_CancerGov_QA`
@@ -78,4 +81,5 @@ Objetivo do fluxo atual:
 3. Converter cada item em texto único com marcadores
 4. Salvar o dataset final em JSONL para treino supervisionado
 5. Consumir o JSONL no notebook `src/notebooks/fine-tuning-colab.ipynb` para executar o fine-tuning
-6. Salvar o modelo mesclado no Google Drive e usá-lo no assistente médico interativo
+6. Gerar prontuários sintéticos a partir de `MedQuAD` e `PubMedQA` para a T3 do assistente médico
+7. Salvar o modelo mesclado no Google Drive e usá-lo no assistente médico interativo

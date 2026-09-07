@@ -1,19 +1,18 @@
 # Repository Guide
 
 ## Run and verify
-
-- Use Python 3.12+ in `.venv`: `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`.
-- Generate the fine-tuning dataset with `python3 -m src.main --resources-dir resources --output resources/finetuning_qa.jsonl`.
-- There is no test, lint, formatter, typecheck, or CI configuration. Use `python3 -m compileall src` as the available baseline verification.
+- Use Python 3.12+ with `.venv`: `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`.
+- Generate the dataset with `python3 -m src.main --resources-dir resources --output resources/finetuning_qa.jsonl`.
+- Baseline verification is `python3 -m compileall src`; there is no repo test/lint/typecheck/CI config.
 
 ## Data pipeline
-
-- Raw inputs are intentionally ignored by Git: place MedQuAD XML below `resources/MedQuAD/` and PubMedQA JSON files directly below `resources/pubmedqa/` before running the CLI.
-- The output is JSONL, one object per record with `source` and `text`; do not change the `ANSWER THE QUESTION.` and `[|...|]` markers without coordinating the matching Colab training notebook.
-- The CLI wiring is in `src/presentation/MedQaController.py`; the use case coordinates reading, curation, and writing.
+- Raw inputs live in `resources/MedQuAD/` and `resources/pubmedqa/`; the CLI reads those paths directly.
+- The dataset writer outputs JSONL with one object per line: `source` and `text`.
+- Do not change the `ANSWER THE QUESTION.` prompt or `[|...|]` markers without updating the matching Colab notebook.
+- `src/presentation/MedQaController.py` wires the dataset CLI; `BuildMedQaDatasetUseCase` owns read -> curate -> write.
 
 ## Code structure
-
-- Preserve the dependency direction: `domain` holds immutable models, `application` defines ports and `BuildMedQaDatasetUseCase`, `infrastructure` implements source parsing/curation/writing, and `presentation` owns argparse and composition.
-- Source modules deliberately use CamelCase filenames matching their exported classes.
-- `documentos/wiki-projeto/` is the project decision log; update it when making an important architectural decision.
+- Keep `domain` for immutable models, `application` for ports/use cases, `infrastructure` for parsing/curation/writing, and `presentation` for CLI/composition.
+- Source modules intentionally use CamelCase filenames that match their exported classes.
+- `src/main.py` runs dataset generation; `src/main_langchain.py` runs the medical assistant CLI.
+- `documentos/wiki-projeto/` is the project decision log; update it for important architectural changes.
