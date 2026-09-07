@@ -15,3 +15,4 @@ Materiais de aula em PDF sobre LangChain.
 
 - Base de apoio para a camada de orquestração com LangChain.
 - Referência para loaders, prompts, chains e agents.
+- Complementa os fluxos de LangGraph quando o grafo usa nós com prompts, ferramentas e chamadas de modelo.

@@ -12,9 +12,17 @@ Referências externas, materiais de estudo e documentos-base do projeto.
 - [Aula 02 - Fine tuning de LLM para documentos](./Fine-tuning-rag-para-documentos/Aula-02-Fine-tuning-de-LLM-para-documentos/README.md)
 - [Aula 03 - RAG para documentos](./Fine-tuning-rag-para-documentos/Aula-03-RAG-para-documentos/README.md)
 
+## Fine-Tuning / RAG
+
+- [Trilha consolidada](./Fine-tuning-rag-para-documentos/README.md)
+
 ## LangChain
 
 - [Materiais de aula LangChain](./langchain/README.md)
+
+## LangGraph
+
+- [Materiais de aula LangGraph](./langGraph/README.md)
 
 ## Especificações
 
@@ -23,4 +31,5 @@ Referências externas, materiais de estudo e documentos-base do projeto.
 ## Leituras de apoio
 
 - [Requisitos de Fine-Tuning](./requisitos_finetuning_llm.md)
+- [Fluxos com dados estruturados e fine-tuning](./fluxos_finetuned_dados_estruturados.md)
 - [Resumo LLM Wiki / Karpathy](./resumo_karpathy_llm_wiki.md)

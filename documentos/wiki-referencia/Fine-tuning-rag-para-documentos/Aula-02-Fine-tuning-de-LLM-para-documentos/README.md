@@ -2,8 +2,11 @@
 
 Esta aula introduz conceitos de LLM e aplica fine-tuning para sumarização de documentos.
 
+O PDF `POSTECH - Aula 2.pdf` complementa o notebook com a visão conceitual do ajuste fino para textos documentais.
+
 ## Arquivos
 
+- `POSTECH - Aula 2.pdf`: material base da aula com visão geral do fine-tuning.
 - `entendendo-llms.ipynb`: introdução conceitual sobre LLMs e exemplos iniciais.
 - `finetuning_summarizer.ipynb`: notebook de fine-tuning para sumarização.
 
@@ -18,3 +21,4 @@ Esta aula introduz conceitos de LLM e aplica fine-tuning para sumarização de d
 
 - Serve como base para adaptar um LLM ao domínio dos documentos do desafio.
 - Complementa os requisitos descritos em `requisitos_finetuning_llm.md`.
+- Para a T3, ajuda a entender a relação entre dataset estruturado, instrução e resposta final do modelo local.

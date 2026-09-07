@@ -2,8 +2,11 @@
 
 Esta aula cobre a coleta, extração e preparação de dados para criação de dataset de fine-tuning.
 
+O PDF `POSTECH - Aula 1.pdf` detalha a mesma etapa com foco em estruturação de dados, JSONL e organização do fluxo.
+
 ## Arquivos
 
+- `POSTECH - Aula 1.pdf`: material base da aula com o fluxo de preparação de dados.
 - `news-scrapper.ipynb`: coleta links de notícias e organiza a base inicial de entrada.
 - `get-news-content.ipynb`: acessa o conteúdo bruto das notícias a partir dos links coletados.
 - `generate-output-for-news.ipynb`: gera saídas/resumos para as notícias processadas.
@@ -25,3 +28,4 @@ Esta aula cobre a coleta, extração e preparação de dados para criação de d
 
 - O conjunto de notebooks parece usar Google Drive/Colab como ambiente de execução.
 - A etapa foca em preparar dados limpos e reutilizáveis para fine-tuning.
+- Para a T3, esta aula é útil como referência de transformação de fonte bruta em formato estruturado de treino.
