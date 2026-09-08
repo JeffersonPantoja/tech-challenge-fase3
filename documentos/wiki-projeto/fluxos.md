@@ -33,10 +33,13 @@
 ## Fluxo de prontuários sintéticos
 
 1. A T3 usa registros de `MedQuAD` e `PubMedQA` como fonte de origem.
-2. Cada item preserva o `source` do dataset original para rastreabilidade.
-3. A API da OpenAI transforma o conteúdo de origem em um prontuário fictício estruturado.
-4. O prontuário é salvo em JSONL para consumo posterior pelo assistente.
-5. A estrutura do prontuário deve permanecer consistente entre as fontes para facilitar consulta e validação.
+2. Cada item preserva o `source` completo com pasta, arquivo e identificador interno para rastreabilidade.
+3. O `BuildSyntheticPatientRecordsUseCase` agrupa os registros em lotes configuráveis.
+4. A API da OpenAI recebe um lote por chamada e devolve um JSON array com um item por `source`.
+5. O lote é validado por `source`; se faltar, sobrar ou duplicar item, a execução tenta novamente até 3 vezes.
+6. Se o lote continuar inválido após as 3 tentativas, ele é descartado e o fluxo segue para o próximo lote.
+7. Os itens válidos são gravados incrementalmente em JSONL e o checkpoint é atualizado por registro processado.
+8. A estrutura do prontuário deve permanecer consistente entre as fontes para facilitar consulta e validação.
 
 ## Fluxo do notebook no Colab
 

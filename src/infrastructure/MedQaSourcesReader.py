@@ -26,14 +26,16 @@ class MedQaSourcesReader(QARecordReader):
     def _parse_medquad_xml(self, path: Path) -> Iterable[QARecord]:
         root = ET.parse(path).getroot()
         focus = (root.findtext("Focus") or "").strip()
+        relative_path = path.relative_to(self._resources_dir / "MedQuAD")
         for pair in root.findall(".//QAPair"):
+            pid = (pair.get("pid") or "").strip()
             question = (pair.findtext("Question") or "").strip()
             answer = (pair.findtext("Answer") or "").strip()
             if question and answer:
                 yield QARecord(
-                    source=f"MedQuAD:{path.name}", 
-                    question=question, 
-                    answer=answer, 
+                    source=f"MedQuAD:{relative_path}:{pid or 'unknown'}",
+                    question=question,
+                    answer=answer,
                     context=focus
                 )
 
