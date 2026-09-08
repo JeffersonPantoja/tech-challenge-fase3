@@ -25,6 +25,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - O reader expõe registros como `Iterable`, e o writer grava o arquivo progressivamente.
 - A leitura dos datasets foi mantida fora do LangChain para reduzir custo de abstração, melhorar desempenho e evitar consumo excessivo de memória.
 - A curadoria foi isolada em `QARecordCurationService` para aplicar limpeza, deduplicação e métricas de descarte antes da escrita final.
+- Na geração de prontuários sintéticos, a curadoria ajuda a limpar a entrada, mas o valor principal vem do lote validado por `source` e do checkpoint de falhas.
 - O treino fica concentrado no notebook `src/notebooks/fine-tuning-colab.ipynb`, que usa `unsloth`, `datasets`, `transformers` e `trl.SFTTrainer` com QLoRA.
 - A etapa de Geração de Prontuários Sintéticos gera prontuários fictícios a partir de `MedQuAD` e `PubMedQA`, preservando `source` para rastreabilidade.
 - A etapa de Geração de Prontuários Sintéticos trabalha em lotes, valida o retorno por `source`, tenta novamente em caso de resposta inválida e descarta o lote após 3 falhas.
