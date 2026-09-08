@@ -26,8 +26,8 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - A leitura dos datasets foi mantida fora do LangChain para reduzir custo de abstração, melhorar desempenho e evitar consumo excessivo de memória.
 - A curadoria foi isolada em `QARecordCurationService` para aplicar limpeza, deduplicação e métricas de descarte antes da escrita final.
 - O treino fica concentrado no notebook `src/notebooks/fine-tuning-colab.ipynb`, que usa `unsloth`, `datasets`, `transformers` e `trl.SFTTrainer` com QLoRA.
-- A T3 gera prontuários fictícios a partir de `MedQuAD` e `PubMedQA`, preservando `source` para rastreabilidade.
-- A T3 trabalha em lotes, valida o retorno por `source`, tenta novamente em caso de resposta inválida e descarta o lote após 3 falhas.
+- A etapa de Geração de Prontuários Sintéticos gera prontuários fictícios a partir de `MedQuAD` e `PubMedQA`, preservando `source` para rastreabilidade.
+- A etapa de Geração de Prontuários Sintéticos trabalha em lotes, valida o retorno por `source`, tenta novamente em caso de resposta inválida e descarta o lote após 3 falhas.
 - A escrita dos prontuários sintéticos é em JSONL para facilitar consumo posterior pelo assistente.
 - O checkpoint é persistido por `source` processado para permitir retomada sem repetir lotes já concluídos.
 - O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.

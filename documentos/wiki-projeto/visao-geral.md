@@ -57,7 +57,7 @@ Os arquivos são XML com estrutura semelhante a:
 
 Cada `QAPair` é convertido em um registro de treino com `question`, `answer` e `context` opcional.
 
-Na T3, cada item recebe um `source` completo com pasta, arquivo e identificador interno, e esses registros são enviados em lote para a API da OpenAI.
+Na Geração de Prontuários Sintéticos, cada item recebe um `source` completo com pasta, arquivo e identificador interno, e esses registros são enviados em lote para a API da OpenAI.
 
 Pastas atuais dentro de `resources/MedQuAD/`:
 
@@ -81,6 +81,6 @@ Objetivo do fluxo atual:
 3. Converter cada item em texto único com marcadores
 4. Salvar o dataset final em JSONL para treino supervisionado
 5. Consumir o JSONL no notebook `src/notebooks/fine-tuning-colab.ipynb` para executar o fine-tuning
-6. Gerar prontuários sintéticos a partir de `MedQuAD` e `PubMedQA` para a T3 do assistente médico
+6. Gerar prontuários sintéticos a partir de `MedQuAD` e `PubMedQA` para a etapa de Geração de Prontuários Sintéticos do assistente médico
 7. Processar os registros sintéticos em lotes com validação, retry e descarte de lotes inválidos
 8. Salvar o modelo mesclado no Google Drive e usá-lo no assistente médico interativo
