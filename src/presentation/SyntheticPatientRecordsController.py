@@ -5,6 +5,7 @@ from pathlib import Path
 
 from src.application.BuildSyntheticPatientRecordsUseCase import BuildSyntheticPatientRecordsUseCase
 from src.domain.CommandOptions import CommandOptions
+from src.infrastructure.JsonSyntheticPatientRecordsFailedCheckpointStore import JsonSyntheticPatientRecordsFailedCheckpointStore
 from src.infrastructure.JsonSyntheticPatientRecordsCheckpointStore import JsonSyntheticPatientRecordsCheckpointStore
 from src.infrastructure.JsonSyntheticPatientRecordWriter import JsonSyntheticPatientRecordWriter
 from src.infrastructure.MedQaSourcesReader import MedQaSourcesReader
@@ -18,6 +19,7 @@ class SyntheticPatientRecordsController:
         self._parser.add_argument("--resources-dir", default="resources")
         self._parser.add_argument("--output", default="resources/patient_records.jsonl")
         self._parser.add_argument("--checkpoint", default="resources/patient_records.checkpoint.json")
+        self._parser.add_argument("--failed-checkpoint", default="resources/patient_records.failed.checkpoint.json")
         self._parser.add_argument("--resume", action="store_true", default=True)
         self._parser.add_argument("--no-resume", action="store_false", dest="resume")
         self._parser.add_argument("--batch-size", type=int, default=10)
@@ -28,6 +30,7 @@ class SyntheticPatientRecordsController:
         args = self._parser.parse_args()
         options = CommandOptions(resources_dir=Path(args.resources_dir), output_path=Path(args.output))
         checkpoint_store = JsonSyntheticPatientRecordsCheckpointStore(Path(args.checkpoint))
+        failed_checkpoint_store = JsonSyntheticPatientRecordsFailedCheckpointStore(Path(args.failed_checkpoint))
 
         reader = MedQaSourcesReader(options.resources_dir)
         generator = OpenAISyntheticPatientRecordGenerator(model=args.openai_model)
@@ -39,6 +42,7 @@ class SyntheticPatientRecordsController:
             writer=writer,
             curation_service=curation_service,
             checkpoint_store=checkpoint_store,
+            failed_checkpoint_store=failed_checkpoint_store,
             resume=args.resume,
             batch_size=args.batch_size,
             num_batches=args.num_batches,

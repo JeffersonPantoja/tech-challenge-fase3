@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from src.application.ports import QARecordReader
 from src.application.SyntheticPatientRecordsCheckpointStore import SyntheticPatientRecordsCheckpointStore
+from src.application.SyntheticPatientRecordsFailedCheckpointStore import SyntheticPatientRecordsFailedCheckpointStore
 from src.application.SyntheticPatientRecordGenerator import SyntheticPatientRecordGenerator
 from src.application.SyntheticPatientRecordWriter import SyntheticPatientRecordWriter
 from src.infrastructure.QARecordCurationService import QARecordCurationService
@@ -20,6 +21,7 @@ class BuildSyntheticPatientRecordsUseCase:
         writer: SyntheticPatientRecordWriter,
         curation_service: QARecordCurationService,
         checkpoint_store: SyntheticPatientRecordsCheckpointStore | None = None,
+        failed_checkpoint_store: SyntheticPatientRecordsFailedCheckpointStore | None = None,
         resume: bool = False,
         batch_size: int = 10,
         num_batches: int | None = None,
@@ -29,6 +31,7 @@ class BuildSyntheticPatientRecordsUseCase:
         self._writer = writer
         self._curation_service = curation_service
         self._checkpoint_store = checkpoint_store
+        self._failed_checkpoint_store = failed_checkpoint_store
         self._resume = resume
         self._batch_size = max(1, batch_size)
         self._num_batches = num_batches if num_batches is None else max(1, num_batches)
@@ -36,7 +39,13 @@ class BuildSyntheticPatientRecordsUseCase:
     def execute(self) -> BuildDatasetResult:
         curated = self._curation_service.curate(self._reader.read())
         checkpoint = self._load_checkpoint()
-        pending_records = [record for record in curated.records if record.source not in checkpoint.processed_sources]
+        failed_checkpoint = self._load_failed_checkpoint()
+        checkpoint.failed_sources.update(failed_checkpoint.failed_sources)
+        pending_records = [
+            record
+            for record in curated.records
+            if record.source not in checkpoint.processed_sources and record.source not in checkpoint.failed_sources
+        ]
 
         if not self._resume:
             checkpoint = SyntheticPatientRecordsCheckpoint()
@@ -54,6 +63,9 @@ class BuildSyntheticPatientRecordsUseCase:
             synthetic_records = self._generate_batch_with_retry(batch_index, batch)
             if not synthetic_records:
                 print(f"[T3] lote {batch_index} ignorado após {self._MAX_BATCH_RETRIES} tentativas")
+                for record in batch:
+                    checkpoint.failed_sources.add(record.source)
+                self._save_failed_checkpoint(checkpoint)
                 continue
             synthetic_by_source = {record.source: record for record in synthetic_records}
 
@@ -80,6 +92,15 @@ class BuildSyntheticPatientRecordsUseCase:
     def _save_checkpoint(self, checkpoint: SyntheticPatientRecordsCheckpoint) -> None:
         if self._checkpoint_store is not None:
             self._checkpoint_store.save(checkpoint)
+
+    def _load_failed_checkpoint(self) -> SyntheticPatientRecordsCheckpoint:
+        if self._failed_checkpoint_store is None:
+            return SyntheticPatientRecordsCheckpoint()
+        return self._failed_checkpoint_store.load()
+
+    def _save_failed_checkpoint(self, checkpoint: SyntheticPatientRecordsCheckpoint) -> None:
+        if self._failed_checkpoint_store is not None:
+            self._failed_checkpoint_store.save(checkpoint)
 
     def _chunked(self, records: list[QARecord], batch_size: int) -> list[list[QARecord]]:
         return [records[index : index + batch_size] for index in range(0, len(records), batch_size)]

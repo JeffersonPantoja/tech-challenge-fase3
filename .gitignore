@@ -9,10 +9,4 @@ venv/
 env/
 .env
 .DS_Store
-resources/MedQuAD/
-resources/pubmedqa/
-resources/finetuning_qa.json
-resources/finetuning_qa.jsonl
-resources/medqa-finetuned-model
-resources/patient_records.checkpoint.json
-resources/patient_records.jsonl
+resources/
