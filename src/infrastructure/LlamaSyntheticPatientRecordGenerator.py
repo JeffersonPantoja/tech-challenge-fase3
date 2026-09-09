@@ -18,10 +18,18 @@ class LlamaSyntheticPatientRecordGenerator(SyntheticPatientRecordGenerator):
     def __init__(self, model_path: str, max_new_tokens: int = 512) -> None:
         self._model_path = Path(model_path)
         self._max_new_tokens = max_new_tokens
+        self._is_local_model = self._model_path.exists()
+        if self._is_local_model and not self._model_path.is_dir():
+            raise NotADirectoryError(f"Caminho do modelo Llama não é uma pasta: {model_path}")
+        if not self._is_local_model and "/" not in model_path:
+            raise FileNotFoundError(
+                f"Modelo Llama não encontrado localmente em {model_path}. "
+                "Use uma pasta com o modelo ou um identificador Hugging Face, como org/model."
+            )
         self._tokenizer = AutoTokenizer.from_pretrained(
-            str(self._model_path),
+            model_path,
             use_fast=True,
-            local_files_only=True,
+            local_files_only=self._is_local_model,
         )
         if self._tokenizer.pad_token is None and self._tokenizer.eos_token is not None:
             self._tokenizer.pad_token = self._tokenizer.eos_token
@@ -32,10 +40,10 @@ class LlamaSyntheticPatientRecordGenerator(SyntheticPatientRecordGenerator):
             dtype = torch.float32
 
         self._model = AutoModelForCausalLM.from_pretrained(
-            str(self._model_path),
+            model_path,
             torch_dtype=dtype,
             device_map="auto",
-            local_files_only=True,
+            local_files_only=self._is_local_model,
         )
         self._model.eval()
 
