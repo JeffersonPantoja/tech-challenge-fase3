@@ -31,8 +31,13 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - A etapa de Geração de Prontuários Sintéticos trabalha em lotes, valida o retorno por `source`, tenta novamente em caso de resposta inválida e descarta o lote após 3 falhas.
 - A escrita dos prontuários sintéticos é em JSONL para facilitar consumo posterior pelo assistente.
 - O checkpoint é persistido por `source` processado para permitir retomada sem repetir lotes já concluídos.
+- T4 usa `patient_records.jsonl` como base RAG sem alterar o arquivo original; o `patient_id` sequencial identifica o paciente.
+- T4 usa embeddings Hugging Face com FAISS para recuperar registros por similaridade semântica.
+- T5 usa LangGraph para orquestrar a montagem do contexto e a geração da resposta.
+- T5 reutiliza o template textual do dataset para reduzir o desalinhamento entre fine-tuning e inferência.
 - O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.
-- A inferência reutiliza o template textual do dataset (`ANSWER THE QUESTION`, `Context`, `Question`, `Answer`) para reduzir desalinhamento entre treino e uso.
+- O fine-tuning, os prontuários sintéticos, o prompt de inferência e o modelo atual de embeddings estão em inglês; por isso, o fluxo RAG deve ser validado inicialmente com perguntas em inglês.
+- Perguntas em português não são traduzidas automaticamente. Suporte em português deverá adicionar uma etapa explícita de tradução para inglês antes da recuperação e, se necessário, tradução da resposta na saída.
 - A interação do assistente acontece pelo terminal em modo interativo.
 - A conversa da sessão fica restrita ao controlador e não entra no prompt de geração.
 - Os módulos do projeto seguem nomes CamelCase para refletir diretamente as classes exportadas.

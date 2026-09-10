@@ -41,6 +41,13 @@
 7. Os itens válidos são gravados incrementalmente em JSONL e o checkpoint é atualizado por registro processado.
 8. A estrutura do prontuário deve permanecer consistente entre as fontes para facilitar consulta e validação.
 
+## Fluxo de normalização dos prontuários
+
+1. O `NormalizePatientIdsController` lê os caminhos de entrada e saída da CLI.
+2. O `JsonSyntheticPatientRecordReader` lê o JSONL e cria `SyntheticPatientRecord`.
+3. O `NormalizePatientIdsUseCase` percorre os registros na ordem original e atribui `patient_id` sequencial a partir de `1`.
+4. O `JsonSyntheticPatientRecordWriter` grava uma nova saída preservando os demais campos do prontuário.
+
 ## Prompt da geração
 
 1. O prompt é escrito em inglês para o modelo responder com um `JSON array` válido.
@@ -71,6 +78,34 @@ Do not include markdown, explanations, or any text outside the JSON.
 4. O notebook instala as dependências inline no próprio Colab.
 5. Os usecases são instanciados diretamente no notebook.
 6. O loop interativo faz chamadas diretas a `AskMedicalAssistantUseCase`.
+
+## Fluxo T4 - Consulta a dados estruturados
+
+1. O `JsonPatientRecordDocumentReader` lê `resources/patient_records.jsonl`.
+2. Os prontuários são convertidos em documentos com metadata de `source` e `patient_id`.
+3. O `FaissPatientRecordRetriever` cria embeddings e recupera os documentos relevantes.
+4. Quando informado, o `patient_id` restringe a busca aos registros daquele paciente.
+5. O retriever preserva o `source` para rastreabilidade.
+
+## Fluxo T5 - Contextualização da resposta
+
+1. O `AskMedicalAssistantWithRagUseCase` recebe a pergunta e os documentos recuperados pela T4.
+2. O grafo LangGraph monta o contexto clínico a partir dos campos estruturados dos prontuários.
+3. O contexto inclui a origem (`source`) de cada documento recuperado.
+4. A pergunta e o contexto são inseridos no template textual usado no fine-tuning.
+5. O modelo local fine-tuned gera a resposta contextualizada.
+6. O runtime encerra a geração no marcador `[|eAnswer|]` e remove o marcador da saída.
+7. A resposta retorna o texto gerado e as fontes utilizadas.
+
+### Idioma do fluxo RAG
+
+1. O fine-tuning foi realizado totalmente em inglês.
+2. Os prontuários sintéticos são gerados em inglês.
+3. O prompt de inferência usa os marcadores e instruções em inglês.
+4. O modelo de embeddings padrão (`sentence-transformers/all-MiniLM-L6-v2`) é voltado principalmente para inglês.
+5. Para obter os melhores resultados, perguntas de teste devem ser feitas em inglês.
+6. Perguntas em português podem reduzir a qualidade da recuperação e da geração porque misturam idiomas entre pergunta, contexto e modelo fine-tuned.
+7. Uma futura interface em português deverá traduzir a pergunta para inglês antes do RAG e traduzir a resposta de volta, caso necessário.
 
 ## Formato final do prompt do fine-tuning
 

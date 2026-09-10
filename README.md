@@ -39,6 +39,16 @@ Gerar o dataset final:
 python3 -m src.main --resources-dir resources --output resources/finetuning_qa.jsonl
 ```
 
+Normalizar os identificadores dos prontuários:
+
+```bash
+python3 -m src.main_normalize_patient_ids
+```
+
+O comando lê `resources/patient_records.jsonl` e gera
+`resources/patient_records_sequential.jsonl`, com `patient_id` sequencial a
+partir de `1`. Os caminhos podem ser alterados com `--input` e `--output`.
+
 ### Saída
 
 O arquivo gerado será um JSONL com uma linha por registro no formato:

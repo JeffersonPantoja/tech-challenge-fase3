@@ -61,6 +61,23 @@ Utilizar LangChain para criar um assistente médico que integre a LLM customizad
 - Gerar respostas contextualizadas pela LLM.
 - Manter o fluxo preparado para atualização contínua das informações do paciente.
 
+### Implementação T4 - Consulta a dados estruturados
+
+- Ler `resources/patient_records.jsonl` sem alterar o arquivo original.
+- Usar `patient_id` sequencial como identificador único durante a estruturação dos documentos RAG.
+- Indexar os prontuários com embeddings e FAISS.
+- Recuperar documentos por similaridade semântica e, quando informado, filtrar por `patient_id`.
+- Preservar o `source` dos documentos recuperados para rastreabilidade.
+
+### Implementação T5 - Contextualização da resposta
+
+- Receber os documentos recuperados pela T4.
+- Montar o contexto clínico com os dados estruturados do paciente.
+- Encadear recuperação, montagem de contexto e geração com LangGraph.
+- Usar o template textual compatível com o fine-tuning.
+- Gerar a resposta com o modelo local fine-tuned.
+- Retornar a resposta junto com o `source` dos documentos utilizados.
+
 ### T6 - Validação
 
 - Testar consultas com diferentes perfis de paciente e tipos de pergunta.

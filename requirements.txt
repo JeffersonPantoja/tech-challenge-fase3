@@ -7,3 +7,8 @@ accelerate
 bitsandbytes
 sentencepiece
 openai
+langgraph
+langchain-community
+langchain-huggingface
+sentence-transformers
+faiss-cpu

@@ -85,10 +85,16 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
                 output_ids = model.generate(**inputs)
 
             generated_ids = output_ids[0][inputs["input_ids"].shape[-1] :]
-            return tokenizer.decode(
+            response = tokenizer.decode(
                 generated_ids,
                 skip_special_tokens=True,
                 clean_up_tokenization_spaces=False,
             ).strip()
+            # The fine-tuning target ends with this marker. Without explicit
+            # stopping, a causal model may continue with another QA example.
+            answer_marker = "[|eAnswer|]"
+            if answer_marker in response:
+                response = response.split(answer_marker, 1)[0]
+            return response.strip()
 
         return generate_text
