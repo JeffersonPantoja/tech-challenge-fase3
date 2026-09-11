@@ -40,19 +40,32 @@ class RagMedicalAssistantController:
         )
 
         print(f"Prontuários indexados: {len(documents)}")
-        print("Digite uma pergunta ou 'sair' para encerrar.")
+        print("Digite uma pergunta, 'sair' para encerrar ou '/clear' para limpar o paciente atual.")
+        current_patient_id: str | None = None
         while True:
             try:
                 question = input("\nPergunta: ").strip()
             except (EOFError, KeyboardInterrupt):
                 print()
                 break
-            if question.lower() in {"sair", "exit", "quit"}:
+            normalized_command = question.lower()
+            if normalized_command in {"sair", "exit", "quit"}:
                 break
+            if normalized_command == "/clear":
+                current_patient_id = None
+                print("Paciente atual removido.")
+                continue
             if not question:
                 continue
 
-            patient_id = input("Patient ID (opcional): ").strip() or None
+            patient_prompt = (
+                f"Patient ID [{current_patient_id}] (Enter para manter): "
+                if current_patient_id
+                else "Patient ID (opcional): "
+            )
+            patient_input = input(patient_prompt).strip()
+            patient_id = patient_input or current_patient_id
             result = use_case.execute(question, patient_id=patient_id)
+            current_patient_id = patient_id
             print(f"\nResposta: {result.answer}")
             print(f"Fontes: {', '.join(result.sources) or 'nenhuma'}")

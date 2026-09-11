@@ -99,6 +99,14 @@ Do not include markdown, explanations, or any text outside the JSON.
 8. O nó `translate_answer` traduz a resposta para o idioma original usando a API da OpenAI.
 9. A resposta retorna o texto traduzido e as fontes utilizadas.
 
+### Memória do paciente na sessão
+
+1. O `RagMedicalAssistantController` mantém o `current_patient_id` somente durante a sessão interativa.
+2. Ao informar um novo `patient_id`, o paciente atual é substituído.
+3. Ao deixar o campo vazio, o último paciente informado é reutilizado.
+4. O comando `/clear` remove o paciente atual e permite uma nova consulta sem filtro de paciente.
+5. O `AskMedicalAssistantWithRagUseCase` continua stateless e recebe o `patient_id` explicitamente em cada execução.
+
 ### Idioma do fluxo RAG
 
 1. O fine-tuning foi realizado totalmente em inglês.
