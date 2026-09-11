@@ -89,13 +89,15 @@ Do not include markdown, explanations, or any text outside the JSON.
 
 ## Fluxo T5 - Contextualização da resposta
 
-1. O `AskMedicalAssistantWithRagUseCase` recebe a pergunta e os documentos recuperados pela T4.
-2. O grafo LangGraph monta o contexto clínico a partir dos campos estruturados dos prontuários.
-3. O contexto inclui a origem (`source`) de cada documento recuperado.
-4. A pergunta e o contexto são inseridos no template textual usado no fine-tuning.
-5. O modelo local fine-tuned gera a resposta contextualizada.
-6. O runtime encerra a geração no marcador `[|eAnswer|]` e remove o marcador da saída.
-7. A resposta retorna o texto gerado e as fontes utilizadas.
+1. O nó `translate_question` detecta o idioma e traduz a pergunta para inglês usando a API da OpenAI.
+2. O `AskMedicalAssistantWithRagUseCase` recebe a pergunta traduzida e os documentos recuperados pela T4.
+3. O grafo LangGraph monta o contexto clínico a partir dos campos estruturados dos prontuários.
+4. O contexto inclui a origem (`source`) de cada documento recuperado.
+5. A pergunta em inglês e o contexto são inseridos no template textual usado no fine-tuning.
+6. O modelo local fine-tuned gera a resposta contextualizada em inglês.
+7. O runtime encerra a geração no marcador `[|eAnswer|]` e remove o marcador da saída.
+8. O nó `translate_answer` traduz a resposta para o idioma original usando a API da OpenAI.
+9. A resposta retorna o texto traduzido e as fontes utilizadas.
 
 ### Idioma do fluxo RAG
 

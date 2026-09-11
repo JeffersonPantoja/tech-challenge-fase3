@@ -35,6 +35,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - T4 usa embeddings Hugging Face com FAISS para recuperar registros por similaridade semântica.
 - T5 usa LangGraph para orquestrar a montagem do contexto e a geração da resposta.
 - T5 reutiliza o template textual do dataset para reduzir o desalinhamento entre fine-tuning e inferência.
+- T5 usa a API da OpenAI exclusivamente para detectar o idioma e traduzir a pergunta para inglês antes da recuperação e a resposta depois da geração; a resposta médica continua sendo gerada pela LLM local fine-tuned.
 - O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.
 - O fine-tuning, os prontuários sintéticos, o prompt de inferência e o modelo atual de embeddings estão em inglês; por isso, o fluxo RAG deve ser validado inicialmente com perguntas em inglês.
 - Perguntas em português não são traduzidas automaticamente. Suporte em português deverá adicionar uma etapa explícita de tradução para inglês antes da recuperação e, se necessário, tradução da resposta na saída.

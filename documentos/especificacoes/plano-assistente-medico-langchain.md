@@ -76,6 +76,8 @@ Utilizar LangChain para criar um assistente médico que integre a LLM customizad
 - Encadear recuperação, montagem de contexto e geração com LangGraph.
 - Usar o template textual compatível com o fine-tuning.
 - Gerar a resposta com o modelo local fine-tuned.
+- Detectar o idioma e traduzir a pergunta para inglês antes dos nós de recuperação e geração usando a API da OpenAI.
+- Traduzir a resposta gerada pelo modelo fine-tuned para o idioma original usando a API da OpenAI.
 - Retornar a resposta junto com o `source` dos documentos utilizados.
 
 ### T6 - Validação

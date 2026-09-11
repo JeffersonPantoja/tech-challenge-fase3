@@ -9,6 +9,7 @@ from src.domain.MedicalAssistantCommandOptions import MedicalAssistantCommandOpt
 from src.infrastructure.FaissPatientRecordRetriever import FaissPatientRecordRetriever
 from src.infrastructure.JsonPatientRecordDocumentReader import JsonPatientRecordDocumentReader
 from src.infrastructure.LocalMedicalAssistantRuntimeLoader import LocalMedicalAssistantRuntimeLoader
+from src.infrastructure.OpenAIQuestionTranslator import OpenAIQuestionTranslator
 
 
 class RagMedicalAssistantController:
@@ -17,6 +18,7 @@ class RagMedicalAssistantController:
         self._parser.add_argument("--model-dir", default="resources/medqa-finetuned-model")
         self._parser.add_argument("--patient-records", default="resources/patient_records.jsonl")
         self._parser.add_argument("--embedding-model", default="sentence-transformers/all-MiniLM-L6-v2")
+        self._parser.add_argument("--translation-model", default="gpt-4o-mini")
         self._parser.add_argument("--top-k", type=int, default=4)
 
     def run(self) -> None:
@@ -30,7 +32,12 @@ class RagMedicalAssistantController:
             embedding_model=args.embedding_model,
             top_k=args.top_k,
         )
-        use_case = AskMedicalAssistantWithRagUseCase(runtime=runtime, retriever=retriever)
+        translator = OpenAIQuestionTranslator(model=args.translation_model)
+        use_case = AskMedicalAssistantWithRagUseCase(
+            runtime=runtime,
+            retriever=retriever,
+            translator=translator,
+        )
 
         print(f"Prontuários indexados: {len(documents)}")
         print("Digite uma pergunta ou 'sair' para encerrar.")
