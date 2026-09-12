@@ -22,32 +22,45 @@ class OpenAIMedicalResponseReviewer(MedicalResponseReviewer):
         self._model = model
         self._observability = observability
 
-    def review(self, record_context: str, answer: str) -> str:
+    def review(self, question: str, record_context: str, answer: str) -> str:
         prompt = f"""Review this medical assistant answer using the patient record.
-Return only the revised answer, in the same language as the answer.
-Keep the original answer first. Then add a blank line and a separate paragraph
-starting exactly with "Revisão automática:".
-Do not prescribe medication or treatment, give dosages, or tell the patient to
-start, stop, or change treatment.
-Preserve facts from the record and do not invent information.
-If the record contains a diagnosis or treatment, append that the patient was
-already diagnosed or received treatment according to the record.
-Otherwise append that diagnosis and treatment must be evaluated by a specialized
-health professional.
+            Return only the revised answer, in the same language as the answer.
+            If the question asks for medication or treatment, return only a paragraph
+            starting exactly with "Revisão automática:". Do not include any part of the
+            local model answer.
+            If the answer contains medication or treatment instructions, return only a
+            paragraph starting exactly with "Revisão automática:". Do not include any part
+            of the local model answer.
+            Otherwise, keep the original answer first. Then add a blank line and a separate
+            paragraph starting exactly with "Revisão automática:".
+            Do not prescribe medication or treatment, give dosages, or tell the patient to
+            start, stop, or change treatment.
+            Preserve facts from the record and do not invent information.
+            If the record contains a diagnosis or treatment, append that the patient was
+            already diagnosed or received treatment according to the record.
+            Otherwise append that diagnosis and treatment must be evaluated by a specialized
+            health professional.
 
-Expected format:
-Original answer.
+            Expected format when there is no medication or treatment request/instruction:
+            Original answer.
 
-Revisão automática: The patient was already evaluated and the condition is a
-possibility according to the record. Diagnosis and treatment require a health
-professional's evaluation.
+            Revisão automática: The patient was already evaluated and the condition is a
+            possibility according to the record. Diagnosis and treatment require a health
+            professional's evaluation.
 
-Patient record:
-{record_context}
+            Expected format when medication or treatment must be omitted:
+            Revisão automática: A solicitação envolve medicação ou tratamento. Essas
+            orientações devem ser avaliadas por um profissional de saúde especializado.
 
-        Model answer:
-        {answer}
-        """
+            Question:
+            {question}
+
+            Patient record:
+            {record_context}
+
+            Model answer:
+            {answer}
+            """
         try:
             response = self._client.responses.create(model=self._model, input=prompt)
             if self._observability:

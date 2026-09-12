@@ -35,5 +35,5 @@ class MedicalAssistantResponseGenerator(ABC):
 
 class MedicalResponseReviewer(ABC):
     @abstractmethod
-    def review(self, record_context: str, answer: str) -> str:
+    def review(self, question: str, record_context: str, answer: str) -> str:
         raise NotImplementedError

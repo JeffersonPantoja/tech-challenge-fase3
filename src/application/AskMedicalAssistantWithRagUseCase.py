@@ -128,6 +128,7 @@ class AskMedicalAssistantWithRagUseCase:
             return {}
         return {
             "answer": self._response_reviewer.review(
+                question=state["original_question"],
                 record_context=state.get("context", ""),
                 answer=state["answer"],
             )
