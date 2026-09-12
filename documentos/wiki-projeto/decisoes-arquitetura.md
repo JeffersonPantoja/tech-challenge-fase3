@@ -12,7 +12,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - `infrastructure`: leitores dos dados, curadoria e writer do JSONL final
 - `infrastructure`: gerador de prontuários sintéticos via API da OpenAI
 - `infrastructure`: loader local da LLM customizada para o assistente médico
-- `infrastructure`: gerador LangChain da resposta do assistente
+- `infrastructure`: gerador LangChain da resposta do assistente e tradutor `OpenAITranslator`
 - `presentation`: controller de linha de comando `MedQaController`
 - `presentation`: controller de linha de comando `MedicalAssistantController`
 
@@ -36,10 +36,10 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - O campo `plan` é preservado nos prontuários, mas fica fora do conteúdo indexado e do contexto RAG.
 - LangGraph orquestra a montagem do contexto e a geração da resposta.
 - O template textual do dataset é reutilizado para reduzir o desalinhamento entre fine-tuning e inferência.
-- A API da OpenAI é usada exclusivamente para detectar o idioma e traduzir a pergunta para inglês antes da recuperação e a resposta depois da geração; a resposta médica continua sendo gerada pela LLM local fine-tuned.
+- A API da OpenAI é usada para geração de prontuários sintéticos e, no fluxo RAG, pelo `OpenAITranslator` para detectar o idioma, traduzir a pergunta para inglês antes da recuperação e traduzir a resposta depois da geração; a resposta médica continua sendo gerada pela LLM local fine-tuned.
 - O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.
 - O fine-tuning, os prontuários sintéticos, o prompt de inferência e o modelo atual de embeddings estão em inglês; por isso, o fluxo RAG deve ser validado inicialmente com perguntas em inglês.
-- Perguntas em português não são traduzidas automaticamente. Suporte em português deverá adicionar uma etapa explícita de tradução para inglês antes da recuperação e, se necessário, tradução da resposta na saída.
+- Perguntas em português são traduzidas automaticamente pelo `OpenAITranslator` antes da recuperação, e a resposta é traduzida de volta para o idioma original depois da geração.
 - O Langfuse é utilizado como observabilidade opcional self-hosted; sua indisponibilidade não pode impedir a execução do assistente.
 - O tracing registra metadados por requisição e, por padrão, não captura o conteúdo clínico integral (`LANGFUSE_CAPTURE_CONTENT=false`).
 - A interação do assistente acontece pelo terminal em modo interativo.

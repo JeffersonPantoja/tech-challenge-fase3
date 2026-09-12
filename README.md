@@ -23,7 +23,7 @@ Fine-tuning do modelo no Colab
 Embeddings + FAISS + recuperação
         |
         v
-Tradução + contexto + geração + tradução
+Tradução (`OpenAITranslator`) + contexto + geração + tradução
         |
         v
 Resposta com fontes e tracing no Langfuse

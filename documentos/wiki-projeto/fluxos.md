@@ -89,14 +89,14 @@ Do not include markdown, explanations, or any text outside the JSON.
 
 ## Fluxo de Contextualização da Resposta
 
-1. O nó `translate_question` detecta o idioma e traduz a pergunta para inglês usando a API da OpenAI.
+1. O nó `translate_question` usa o `OpenAITranslator` e a API da OpenAI para detectar o idioma e traduzir a pergunta para inglês.
 2. O `AskMedicalAssistantWithRagUseCase` recebe a pergunta traduzida e os documentos recuperados pela etapa de consulta.
 3. O grafo LangGraph monta o contexto clínico a partir de `patient_id`, `chief_complaint`, `history`, `medications`, `vitals` e `assessment`.
 4. O contexto inclui a origem (`source`) de cada documento recuperado.
 5. A pergunta em inglês e o contexto são inseridos no template textual usado no fine-tuning.
 6. O modelo local fine-tuned gera a resposta contextualizada em inglês.
 7. O runtime encerra a geração no marcador `[|eAnswer|]` e remove o marcador da saída.
-8. O nó `translate_answer` traduz a resposta para o idioma original usando a API da OpenAI.
+8. O nó `translate_answer` usa o `OpenAITranslator` e a API da OpenAI para traduzir a resposta para o idioma original.
 9. A resposta retorna o texto traduzido e as fontes utilizadas.
 
 O campo `plan` permanece no `patient_records.jsonl` e nos prontuários sintéticos, mas não é incluído no conteúdo indexado nem no contexto enviado ao modelo.
@@ -125,8 +125,7 @@ O campo `plan` permanece no `patient_records.jsonl` e nos prontuários sintétic
 3. O prompt de inferência usa os marcadores e instruções em inglês.
 4. O modelo de embeddings padrão (`sentence-transformers/all-MiniLM-L6-v2`) é voltado principalmente para inglês.
 5. Para obter os melhores resultados, perguntas de teste devem ser feitas em inglês.
-6. Perguntas em português podem reduzir a qualidade da recuperação e da geração porque misturam idiomas entre pergunta, contexto e modelo fine-tuned.
-7. Uma futura interface em português deverá traduzir a pergunta para inglês antes do RAG e traduzir a resposta de volta, caso necessário.
+6. Perguntas em português são traduzidas para inglês antes da recuperação e a resposta é traduzida de volta pelo `OpenAITranslator`.
 
 ## Formato final do prompt do fine-tuning
 
