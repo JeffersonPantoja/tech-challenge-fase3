@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -7,6 +8,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 
 from src.application.QuestionTranslator import QuestionTranslator
+from src.application.ObservabilityTracer import ObservabilityTracer
 from src.application.PatientRecordRetriever import PatientRecordRetriever
 from src.domain.MedicalAssistantRuntime import MedicalAssistantRuntime
 from src.domain.PatientRecordDocument import PatientRecordDocument
@@ -29,10 +31,12 @@ class AskMedicalAssistantWithRagUseCase:
         runtime: MedicalAssistantRuntime,
         retriever: PatientRecordRetriever,
         translator: QuestionTranslator,
+        observability: ObservabilityTracer | None = None,
     ) -> None:
         self._runtime = runtime
         self._retriever = retriever
         self._translator = translator
+        self._observability = observability
         self._response_chain = (
             PromptTemplate.from_template(
                 "ANSWER THE QUESTION.\n"
@@ -65,9 +69,19 @@ class AskMedicalAssistantWithRagUseCase:
         normalized_question = question.strip()
         if not normalized_question:
             raise ValueError("A pergunta não pode estar vazia")
+        config: dict[str, object] = {}
+        if self._observability:
+            config["callbacks"] = self._observability.callbacks()
+            config["metadata"] = {
+                "request_id": str(uuid.uuid4()),
+                "patient_id": patient_id,
+            }
+            config["run_name"] = "medical_assistant_request"
         result = self._graph.invoke(
-            {"original_question": normalized_question, "patient_id": patient_id}
+            {"original_question": normalized_question, "patient_id": patient_id}, config=config
         )
+        if self._observability:
+            self._observability.flush()
         documents = result.get("documents", [])
         return RagAnswer(
             answer=str(result.get("answer", "")).strip(),

@@ -10,6 +10,7 @@ from src.infrastructure.FaissPatientRecordRetriever import FaissPatientRecordRet
 from src.infrastructure.JsonPatientRecordDocumentReader import JsonPatientRecordDocumentReader
 from src.infrastructure.LocalMedicalAssistantRuntimeLoader import LocalMedicalAssistantRuntimeLoader
 from src.infrastructure.OpenAIQuestionTranslator import OpenAIQuestionTranslator
+from src.infrastructure.LangfuseObservabilityTracer import LangfuseObservabilityTracer
 
 
 class RagMedicalAssistantController:
@@ -32,11 +33,13 @@ class RagMedicalAssistantController:
             embedding_model=args.embedding_model,
             top_k=args.top_k,
         )
-        translator = OpenAIQuestionTranslator(model=args.translation_model)
+        observability = LangfuseObservabilityTracer()
+        translator = OpenAIQuestionTranslator(model=args.translation_model, observability=observability)
         use_case = AskMedicalAssistantWithRagUseCase(
             runtime=runtime,
             retriever=retriever,
             translator=translator,
+            observability=observability,
         )
 
         print(f"Prontuários indexados: {len(documents)}")
@@ -69,3 +72,4 @@ class RagMedicalAssistantController:
             current_patient_id = patient_id
             print(f"\nResposta: {result.answer}")
             print(f"Fontes: {', '.join(result.sources) or 'nenhuma'}")
+        observability.flush()

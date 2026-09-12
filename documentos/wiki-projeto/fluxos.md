@@ -109,6 +109,15 @@ O campo `plan` permanece no `patient_records.jsonl` e nos prontuários sintétic
 4. O comando `/clear` remove o paciente atual e permite uma nova consulta sem filtro de paciente.
 5. O `AskMedicalAssistantWithRagUseCase` continua stateless e recebe o `patient_id` explicitamente em cada execução.
 
+### Observabilidade com Langfuse
+
+1. O `LangfuseObservabilityTracer` inicializa o tracing somente quando as credenciais locais estão configuradas.
+2. O `AskMedicalAssistantWithRagUseCase` envia callbacks ao grafo LangGraph e identifica cada execução com `request_id`.
+3. Os nós de tradução, recuperação, contexto e geração aparecem como etapas do trace.
+4. As chamadas diretas da OpenAI para tradução são registradas em traces próprios.
+5. Com `LANGFUSE_CAPTURE_CONTENT=false`, são registrados metadados e tamanhos, sem conteúdo clínico integral.
+6. Se o Langfuse estiver indisponível, o assistente continua executando normalmente.
+
 ### Idioma do fluxo RAG
 
 1. O fine-tuning foi realizado totalmente em inglês.

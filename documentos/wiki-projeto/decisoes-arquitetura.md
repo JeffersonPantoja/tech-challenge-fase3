@@ -40,6 +40,8 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.
 - O fine-tuning, os prontuários sintéticos, o prompt de inferência e o modelo atual de embeddings estão em inglês; por isso, o fluxo RAG deve ser validado inicialmente com perguntas em inglês.
 - Perguntas em português não são traduzidas automaticamente. Suporte em português deverá adicionar uma etapa explícita de tradução para inglês antes da recuperação e, se necessário, tradução da resposta na saída.
+- O Langfuse é utilizado como observabilidade opcional self-hosted; sua indisponibilidade não pode impedir a execução do assistente.
+- O tracing registra metadados por requisição e, por padrão, não captura o conteúdo clínico integral (`LANGFUSE_CAPTURE_CONTENT=false`).
 - A interação do assistente acontece pelo terminal em modo interativo.
 - A conversa da sessão fica restrita ao controlador e não entra no prompt de geração.
 - Os módulos do projeto seguem nomes CamelCase para refletir diretamente as classes exportadas.
