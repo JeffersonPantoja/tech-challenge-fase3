@@ -10,6 +10,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 from src.application.ports import MedicalAssistantRuntimeLoader
 from src.domain.MedicalAssistantCommandOptions import MedicalAssistantCommandOptions
 from src.domain.MedicalAssistantRuntime import MedicalAssistantRuntime
+from src.infrastructure.LangfuseObservabilityTracer import LangfuseObservabilityTracer
 
 
 class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
@@ -17,6 +18,9 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
     _MODEL_WEIGHTS_FILE = "model.safetensors"
     _MAX_NEW_TOKENS = 128
     _REPETITION_PENALTY = 1.05
+
+    def __init__(self, observability: LangfuseObservabilityTracer | None = None) -> None:
+        self._observability = observability
 
     def load(self, options: MedicalAssistantCommandOptions) -> MedicalAssistantRuntime:
         self._validate_model_directory(options.model_dir)
@@ -95,6 +99,13 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
             answer_marker = "[|eAnswer|]"
             if answer_marker in response:
                 response = response.split(answer_marker, 1)[0]
+            if self._observability:
+                self._observability.trace_local_generation(
+                    prompt_text,
+                    response,
+                    input_tokens=int(inputs["input_ids"].shape[-1]),
+                    output_tokens=int(generated_ids.shape[-1]),
+                )
             return response.strip()
 
         return generate_text

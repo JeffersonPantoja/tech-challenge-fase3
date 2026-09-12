@@ -65,7 +65,9 @@ class OpenAIMedicalResponseReviewer(MedicalResponseReviewer):
             response = self._client.responses.create(model=self._model, input=prompt)
             if self._observability:
                 self._observability.trace_openai_call(
-                    "review_medical_response", prompt, response.output_text
+                    "review_medical_response", prompt, response.output_text,
+                    input_tokens=response.usage.input_tokens,
+                    output_tokens=response.usage.output_tokens,
                 )
             revised = response.output_text.strip()
             if revised:

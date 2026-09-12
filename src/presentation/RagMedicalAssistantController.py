@@ -29,7 +29,9 @@ class RagMedicalAssistantController:
     def run(self) -> None:
         args = self._parser.parse_args()
 
-        runtime = LoadMedicalAssistantUseCase(LocalMedicalAssistantRuntimeLoader()).execute(
+        observability = LangfuseObservabilityTracer()
+
+        runtime = LoadMedicalAssistantUseCase(LocalMedicalAssistantRuntimeLoader(observability)).execute(
             MedicalAssistantCommandOptions(model_dir=Path(args.model_dir))
         )
 
@@ -39,8 +41,6 @@ class RagMedicalAssistantController:
             embedding_model=args.embedding_model,
             top_k=args.top_k,
         )
-
-        observability = LangfuseObservabilityTracer()
 
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:

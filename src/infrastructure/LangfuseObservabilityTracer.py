@@ -31,7 +31,14 @@ class LangfuseObservabilityTracer(ObservabilityTracer):
     def callbacks(self) -> list[Any]:
         return [self._handler] if self._handler is not None else []
 
-    def trace_openai_call(self, name: str, prompt: str, output: str) -> None:
+    def trace_openai_call(
+        self,
+        name: str,
+        prompt: str,
+        output: str,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
+    ) -> None:
         if self._client is None:
             return
         try:
@@ -43,8 +50,37 @@ class LangfuseObservabilityTracer(ObservabilityTracer):
                 input=input_value,
             ) as generation:
                 generation.update(output=output_value)
+                self._update_usage(generation, input_tokens, output_tokens)
         except Exception:  # noqa: BLE001
             logger.exception("Falha ao registrar chamada OpenAI no Langfuse")
+
+    def trace_local_generation(
+        self, prompt: str, output: str, input_tokens: int, output_tokens: int
+    ) -> None:
+        if self._client is None:
+            return
+        try:
+            input_value: object = prompt if self._capture_content else {"length": len(prompt)}
+            output_value: object = output if self._capture_content else {"length": len(output)}
+            with self._client.start_as_current_observation(
+                as_type="generation", name="local_model_generation", input=input_value
+            ) as generation:
+                generation.update(output=output_value)
+                self._update_usage(generation, input_tokens, output_tokens)
+        except Exception:  # noqa: BLE001
+            logger.exception("Falha ao registrar geração local no Langfuse")
+
+    @staticmethod
+    def _update_usage(generation: Any, input_tokens: int | None, output_tokens: int | None) -> None:
+        if input_tokens is None or output_tokens is None:
+            return
+        generation.update(
+            usage_details={
+                "input": input_tokens,
+                "output": output_tokens,
+                "total": input_tokens + output_tokens,
+            }
+        )
 
     def flush(self) -> None:
         if self._client is None:

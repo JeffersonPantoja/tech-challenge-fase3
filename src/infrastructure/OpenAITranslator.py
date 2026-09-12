@@ -36,7 +36,11 @@ class OpenAITranslator(QuestionTranslator):
             input=prompt,
         )
         if self._observability:
-            self._observability.trace_openai_call("translate_question", prompt, response.output_text)
+            self._observability.trace_openai_call(
+                "translate_question", prompt, response.output_text,
+                input_tokens=response.usage.input_tokens,
+                output_tokens=response.usage.output_tokens,
+            )
         payload = self._parse_json(response.output_text)
         language = str(payload.get("language", "")).strip().lower()
         translated_text = str(payload.get("translated_text", "")).strip()
@@ -59,7 +63,11 @@ class OpenAITranslator(QuestionTranslator):
             input=prompt,
         )
         if self._observability:
-            self._observability.trace_openai_call("translate_answer", prompt, response.output_text)
+            self._observability.trace_openai_call(
+                "translate_answer", prompt, response.output_text,
+                input_tokens=response.usage.input_tokens,
+                output_tokens=response.usage.output_tokens,
+            )
         translated_answer = response.output_text.strip()
         if not translated_answer:
             raise ValueError("A API de tradução retornou uma resposta vazia")
