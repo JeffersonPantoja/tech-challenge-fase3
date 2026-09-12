@@ -85,7 +85,10 @@ class AskMedicalAssistantWithRagUseCase:
         documents = result.get("documents", [])
         return RagAnswer(
             answer=str(result.get("answer", "")).strip(),
-            sources=[document.source for document in documents],
+            sources=[
+                f"{document.source} (ID do paciente: {document.patient_id})"
+                for document in documents
+            ],
         )
 
     def _retrieve(self, state: _RagState) -> _RagState:
