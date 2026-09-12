@@ -91,13 +91,15 @@ Do not include markdown, explanations, or any text outside the JSON.
 
 1. O nó `translate_question` detecta o idioma e traduz a pergunta para inglês usando a API da OpenAI.
 2. O `AskMedicalAssistantWithRagUseCase` recebe a pergunta traduzida e os documentos recuperados pela T4.
-3. O grafo LangGraph monta o contexto clínico a partir dos campos estruturados dos prontuários.
+3. O grafo LangGraph monta o contexto clínico a partir de `patient_id`, `chief_complaint`, `history`, `medications`, `vitals` e `assessment`.
 4. O contexto inclui a origem (`source`) de cada documento recuperado.
 5. A pergunta em inglês e o contexto são inseridos no template textual usado no fine-tuning.
 6. O modelo local fine-tuned gera a resposta contextualizada em inglês.
 7. O runtime encerra a geração no marcador `[|eAnswer|]` e remove o marcador da saída.
 8. O nó `translate_answer` traduz a resposta para o idioma original usando a API da OpenAI.
 9. A resposta retorna o texto traduzido e as fontes utilizadas.
+
+O campo `plan` permanece no `patient_records.jsonl` e nos prontuários sintéticos, mas não é incluído no conteúdo indexado nem no contexto enviado ao modelo.
 
 ### Memória do paciente na sessão
 

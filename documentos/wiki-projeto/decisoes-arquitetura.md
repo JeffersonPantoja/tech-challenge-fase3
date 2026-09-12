@@ -33,6 +33,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - O checkpoint é persistido por `source` processado para permitir retomada sem repetir lotes já concluídos.
 - T4 usa `patient_records.jsonl` como base RAG sem alterar o arquivo original; o `patient_id` sequencial identifica o paciente.
 - T4 usa embeddings Hugging Face com FAISS para recuperar registros por similaridade semântica.
+- O campo `plan` é preservado nos prontuários, mas fica fora do conteúdo indexado e do contexto RAG.
 - T5 usa LangGraph para orquestrar a montagem do contexto e a geração da resposta.
 - T5 reutiliza o template textual do dataset para reduzir o desalinhamento entre fine-tuning e inferência.
 - T5 usa a API da OpenAI exclusivamente para detectar o idioma e traduzir a pergunta para inglês antes da recuperação e a resposta depois da geração; a resposta médica continua sendo gerada pela LLM local fine-tuned.

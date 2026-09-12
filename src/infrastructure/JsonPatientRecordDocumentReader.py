@@ -42,6 +42,5 @@ class JsonPatientRecordDocumentReader(PatientRecordDocumentReader):
             ("Medications", item.get("medications", "")),
             ("Vitals", item.get("vitals", "")),
             ("Assessment", item.get("assessment", "")),
-            ("Plan", item.get("plan", "")),
         )
         return "\n".join(f"{label}: {value}" for label, value in fields)
