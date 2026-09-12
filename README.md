@@ -74,7 +74,37 @@ documentos/
   especificacoes/    planos técnicos
 ```
 
-Os arquivos em `resources/` são ignorados pelo Git. Os caminhos abaixo pressupõem que os datasets e modelos já foram colocados localmente.
+## Fontes de Dados
+
+O projeto usa duas bases públicas de conhecimento médico. Os arquivos são mantidos localmente em `resources/` e não são versionados neste repositório.
+
+### MedQuAD
+
+- Origem: [repositório oficial no GitHub](https://github.com/abachaa/MedQuAD)
+- Localização esperada: `resources/MedQuAD/`
+- Formato: arquivos XML organizados em subdiretórios
+- Conteúdo: pares de perguntas e respostas médicas extraídos de fontes do National Institutes of Health (NIH)
+- Uso no projeto: preparação do dataset, curadoria e geração de prontuários sintéticos
+
+### PubMedQA
+
+- Origem: [página oficial do PubMedQA](https://pubmedqa.github.io/)
+- Localização esperada: `resources/pubmedqa/`
+- Formato: arquivos JSON
+- Conteúdo: perguntas biomédicas associadas a contextos e respostas baseados em artigos científicos do PubMed
+- Uso no projeto: preparação do dataset, curadoria e geração de prontuários sintéticos
+
+### Preparação Local
+
+Antes de executar os pipelines, confirme que os diretórios estão disponíveis:
+
+```text
+resources/
+├── MedQuAD/
+└── pubmedqa/
+```
+
+O campo `source` é preservado durante o processamento para permitir rastrear cada registro até o arquivo e identificador de origem.
 
 ## Dataset de Fine-Tuning
 
