@@ -4,7 +4,7 @@ Referência para fluxos parecidos com modelo fine-tuned enriquecido por dados es
 
 ## Ideia central
 
-O padrão mais próximo do que precisamos para a T3 é:
+O padrão mais próximo do que precisamos para a geração de dados estruturados é:
 
 1. Receber dados estruturados do paciente ou do caso clínico.
 2. Enriquecer esse dado com conteúdo textual médico.

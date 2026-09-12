@@ -1,27 +1,42 @@
 # Tech Challenge - Fase 3
 
-Projeto em Python para preparar dados médicos, fazer fine-tuning e usar um assistente médico com LangChain.
+Assistente médico em Python com preparação de dados, geração de prontuários sintéticos, fine-tuning local, RAG, tradução multilíngue e observabilidade com Langfuse.
 
 ## Fluxo do Projeto
 
-1. Gerar o dataset local em JSONL a partir de `MedQuAD` e `PubMedQA`.
-2. Executar o fine-tuning no Colab e salvar o modelo mesclado no Google Drive.
-3. Usar o assistente médico localmente no terminal com o modelo mesclado.
-4. Usar o assistente médico no Colab chamando os usecases diretamente.
-
-## Estrutura
-
-- `src/`: código da aplicação com clean architecture
-- `resources/`: dados brutos e saída final do dataset
-  - `resources/MedQuAD/`: base XML com pares de pergunta e resposta obtida de `https://github.com/abachaa/MedQuAD`
-  - `resources/pubmedqa/`: base JSON com perguntas e respostas obtida de `https://pubmedqa.github.io/`
-  - `resources/finetuning_qa.jsonl`: saída gerada para fine-tuning
-- `documentos/`: especificações, wiki de referência e wiki do projeto
+```text
+MedQuAD + PubMedQA
+        |
+        v
+Curadoria e dataset de fine-tuning
+        |
+        v
+Prontuários sintéticos em JSONL
+        |
+        v
+Normalização dos patient_id
+        |
+        v
+Fine-tuning do modelo no Colab
+        |
+        v
+Embeddings + FAISS + recuperação
+        |
+        v
+Tradução + contexto + geração + tradução
+        |
+        v
+Resposta com fontes e tracing no Langfuse
+```
 
 ## Requisitos
 
-- Python 3.12+
-- Ambiente virtual `.venv`
+- Python 3.12 ou superior
+- Git
+- Docker e Docker Compose, para o Langfuse self-hosted
+- GPU recomendada para fine-tuning e inferência
+- Conta Hugging Face com acesso a `meta-llama/Llama-3.2-1B-Instruct`
+- Chave `OPENAI_API_KEY` para geração sintética e tradução
 
 ## Instalação
 
@@ -31,92 +46,350 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Execução
-
-Gerar o dataset final:
+As variáveis do arquivo `.env` não são carregadas automaticamente pelo shell. Para carregá-las na sessão atual:
 
 ```bash
-python3 -m src.main --resources-dir resources --output resources/finetuning_qa.jsonl
+set -a
+source .env
+set +a
 ```
 
-Normalizar os identificadores dos prontuários:
+## Estrutura de Diretórios
+
+```text
+src/
+  application/       casos de uso e portas
+  domain/            modelos imutáveis
+  infrastructure/   leitores, writers, LLM, RAG e integrações
+  presentation/     controllers de CLI
+  notebooks/         notebooks para Colab
+resources/
+  MedQuAD/           dataset XML de origem
+  pubmedqa/          dataset JSON de origem
+  finetuning_qa.jsonl
+  patient_records.jsonl
+  medqa-finetuned-model/
+documentos/
+  wiki-projeto/      decisões e fluxos do projeto
+  especificacoes/    planos técnicos
+```
+
+Os arquivos em `resources/` são ignorados pelo Git. Os caminhos abaixo pressupõem que os datasets e modelos já foram colocados localmente.
+
+## Dataset de Fine-Tuning
+
+### O que acontece
+
+O pipeline lê MedQuAD e PubMedQA, normaliza os registros, remove duplicidades e escreve um JSONL com o campo `source` e o texto no formato usado pelo fine-tuning.
+
+O prompt usa:
+
+```text
+ANSWER THE QUESTION.
+[|Context|] ...[|eContext|]
+
+[|Question|] ...[|eQuestion|]
+
+[|Answer|] ...[|eAnswer|]
+```
+
+### Como executar
+
+Garanta que existam:
+
+```text
+resources/MedQuAD/
+resources/pubmedqa/
+```
+
+Execute:
+
+```bash
+python3 -m src.main \
+  --resources-dir resources \
+  --output resources/finetuning_qa.jsonl
+```
+
+Saída:
+
+```text
+resources/finetuning_qa.jsonl
+```
+
+## Geração de Prontuários Sintéticos
+
+### O que acontece
+
+Cada caso curado é convertido em um prontuário sintético em inglês. A execução usa lotes, valida o retorno por `source`, repete lotes inválidos até três vezes e mantém checkpoints para permitir retomada.
+
+O formato final contém:
+
+```json
+{
+  "source": "...",
+  "patient_id": "...",
+  "chief_complaint": "...",
+  "history": "...",
+  "medications": "...",
+  "vitals": "...",
+  "assessment": "...",
+  "plan": "..."
+}
+```
+
+### Como executar com OpenAI
+
+```bash
+export OPENAI_API_KEY="sua-chave"
+python3 -m src.main_synthetic_records \
+  --backend openai \
+  --resources-dir resources \
+  --output resources/patient_records.jsonl
+```
+
+Opções úteis:
+
+```bash
+python3 -m src.main_synthetic_records \
+  --batch-size 10 \
+  --num-batches 2 \
+  --openai-model gpt-4o-mini
+```
+
+Para reiniciar sem reutilizar checkpoints:
+
+```bash
+python3 -m src.main_synthetic_records --no-resume
+```
+
+### Como executar com Llama local
+
+```bash
+python3 -m src.main_synthetic_records \
+  --backend llama \
+  --llama-model-path caminho/para/llama-model
+```
+
+Saída principal:
+
+```text
+resources/patient_records.jsonl
+```
+
+## Normalização dos Pacientes
+
+### O que acontece
+
+O processo substitui os `patient_id` gerados por identificadores sequenciais, evitando duplicidades entre os prontuários.
+
+### Como executar
 
 ```bash
 python3 -m src.main_normalize_patient_ids
 ```
 
-O comando lê `resources/patient_records.jsonl` e gera
-`resources/patient_records_sequential.jsonl`, com `patient_id` sequencial a
-partir de `1`. Os caminhos podem ser alterados com `--input` e `--output`.
+Por padrão:
 
-### Saída
-
-O arquivo gerado será um JSONL com uma linha por registro no formato:
-
-```json
-{
-  "source": "...",
-  "text": "ANSWER THE QUESTION. ..."
-}
+```text
+Entrada: resources/patient_records.jsonl
+Saída:   resources/patient_records_sequential.jsonl
 ```
 
-Carregar o assistente médico com LangChain:
+Para definir outros caminhos:
 
 ```bash
-python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model
+python3 -m src.main_normalize_patient_ids \
+  --input resources/patient_records.jsonl \
+  --output resources/patient_records_sequential.jsonl
 ```
 
-## Fine-tuning no Colab
+Depois da normalização, use o arquivo sequencial como base do RAG ou substitua o arquivo original conforme o fluxo de dados adotado.
 
-Notebook base: `src/notebooks/fine-tuning-colab.ipynb`
+## Fine-Tuning no Colab
 
-### Passo a passo
+### O que acontece
 
-1. Gere o dataset localmente com o comando acima.
-2. Envie `resources/finetuning_qa.jsonl` manualmente para o Google Drive.
-3. Abra o notebook no Colab e monte o Drive.
-4. Defina o Secret `HF_TOKEN` no Colab com um token com acesso ao modelo `meta-llama/Llama-3.2-1B-Instruct`.
-5. Ajuste `DATASET_PATH` e `OUTPUT_DIR` para o caminho do seu Drive.
-6. Execute as células em ordem: dependências, Drive, autenticação HF, dataset, modelo, treino e teste.
-7. O notebook faz merge do adapter e salva o modelo completo no diretório final.
+O notebook usa QLoRA, Unsloth, Transformers e `trl.SFTTrainer` para ajustar o modelo base `meta-llama/Llama-3.2-1B-Instruct`. Ao final, o adapter é mesclado e o modelo completo é salvo.
 
-### Requisitos de armazenamento
+### Como executar
 
-- Dataset local gerado: cerca de 25 MB a 80 MB, dependendo do conteúdo final.
-- Dataset no Drive: mesmo tamanho do arquivo local, mais a cópia de backup que você mantiver.
-- Artefatos do treino no Drive: reserve de 2 GB a 8 GB.
-- Espaço no runtime do Colab: reserve pelo menos 12 GB livres para dependências, cache e checkpoints.
-- Se usar um modelo maior que o `LLaMA 3.2 1B`, aumente a folga de armazenamento e memória da GPU.
+1. Gere `resources/finetuning_qa.jsonl` localmente.
+2. Envie o arquivo para o Google Drive.
+3. Abra `src/notebooks/fine-tuning-colab.ipynb` no Google Colab.
+4. Configure o secret `HF_TOKEN` com acesso ao modelo Llama.
+5. Ajuste `DATASET_PATH` e `OUTPUT_DIR`.
+6. Execute as células em ordem.
+7. Aguarde o merge e o salvamento do modelo final.
 
-### Observações técnicas
+O diretório final precisa conter pelo menos:
 
-- O notebook usa QLoRA para reduzir o consumo de VRAM.
-- O notebook usa `unsloth` para baixar e preparar o modelo base, como na referência.
-- O notebook faz merge do adapter após o treino e salva o modelo completo no diretório final.
-- O runtime usa sempre o modelo local mesclado salvo no Drive.
-- O notebook autentica no Hugging Face antes de baixar o modelo base.
-- O carregamento espera um arquivo JSONL com uma linha por exemplo.
-- O prompt final segue o formato `ANSWER THE QUESTION.` usado no dataset.
+```text
+config.json
+model.safetensors
+tokenizer files
+```
 
-## Assistente Médico no Colab
+Copie ou monte esse diretório como:
 
-Notebook: `src/notebooks/medical-assistant-colab.ipynb`
+```text
+resources/medqa-finetuned-model/
+```
 
-### Fluxo
+## Consulta a Dados Estruturados
+
+### O que acontece
+
+O `JsonPatientRecordDocumentReader` lê os prontuários e cria documentos com `source` e `patient_id`. O campo `plan` permanece no JSONL, mas não é incluído no conteúdo indexado pelo RAG.
+
+O `FaissPatientRecordRetriever`:
+
+- gera embeddings com `sentence-transformers/all-MiniLM-L6-v2`;
+- cria um índice FAISS em memória;
+- recupera os documentos semanticamente mais relevantes;
+- filtra pelo `patient_id` atual quando informado;
+- preserva `source` para rastreabilidade.
+
+## Contextualização da Resposta
+
+### O que acontece
+
+O grafo LangGraph executa os nós nesta ordem:
+
+```text
+translate_question
+  └── retrieve
+        └── build_context
+              └── generate
+                    └── translate_answer
+```
+
+1. A API da OpenAI identifica o idioma da pergunta e a traduz para inglês.
+2. A recuperação consulta os prontuários usando a pergunta em inglês.
+3. O contexto é montado sem o campo `plan`.
+4. O modelo local fine-tuned gera a resposta em inglês.
+5. A resposta é traduzida para o idioma original pela API da OpenAI.
+6. O resultado retorna a resposta e as fontes consultadas.
+
+O `patient_id` é mantido na sessão. Pressione Enter no campo do paciente para continuar usando o paciente atual, informe outro ID para trocá-lo ou use `/clear` para removê-lo.
+
+### Como executar
+
+Garanta que existam:
+
+```text
+resources/medqa-finetuned-model/
+resources/patient_records.jsonl
+```
+
+Configure a OpenAI:
+
+```bash
+export OPENAI_API_KEY="sua-chave"
+```
+
+Execute:
+
+```bash
+python3 -m src.main_rag
+```
+
+Opções:
+
+```bash
+python3 -m src.main_rag \
+  --model-dir resources/medqa-finetuned-model \
+  --patient-records resources/patient_records.jsonl \
+  --embedding-model sentence-transformers/all-MiniLM-L6-v2 \
+  --translation-model gpt-4o-mini \
+  --top-k 4
+```
+
+## Langfuse Self-Hosted
+
+### O que acontece
+
+O Langfuse observa o fluxo sem participar da lógica de resposta. Os traces do LangGraph e as chamadas diretas da OpenAI podem ser visualizados no dashboard local.
+
+### Como executar
+
+Use uma instalação self-hosted do Langfuse com Docker Compose e acesse:
+
+```text
+http://localhost:3000
+```
+
+Crie um projeto e configure suas chaves no `.env`:
+
+```bash
+LANGFUSE_HOST=http://localhost:3000
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
+LANGFUSE_TRACING_ENVIRONMENT=local
+LANGFUSE_RELEASE=local
+LANGFUSE_CAPTURE_CONTENT=false
+```
+
+Carregue as variáveis e execute o RAG:
+
+```bash
+set -a
+source .env
+set +a
+python3 -m src.main_rag
+```
+
+No dashboard, consulte **Traces** e abra uma execução individual. Os nós esperados são:
+
+```text
+translate_question
+retrieve
+build_context
+generate
+translate_answer
+```
+
+Para visualizar prompts e respostas integrais durante desenvolvimento:
+
+```bash
+LANGFUSE_CAPTURE_CONTENT=true
+```
+
+Esse modo pode registrar perguntas, contexto clínico e respostas. Use-o somente em ambiente controlado.
+
+## Assistente Sem RAG
+
+Para executar o fluxo original, sem recuperação de prontuários e sem tradução automática:
+
+```bash
+python3 -m src.main_langchain \
+  --model-dir resources/medqa-finetuned-model
+```
+
+## Colab do Assistente
+
+O notebook `src/notebooks/medical-assistant-colab.ipynb` executa o assistente sem RAG usando os use cases diretamente.
+
+Passos:
 
 1. Monte o Google Drive.
-2. Clone o repositório por HTTPS em uma célula separada para permitir atualizações.
-3. Aponte `MODEL_PATH` para o diretório do modelo mesclado no Drive, garantindo que existam `config.json` e `model.safetensors`.
-4. Instale as dependências inline no próprio notebook.
-5. O notebook instancia `LoadMedicalAssistantUseCase` e `AskMedicalAssistantUseCase` diretamente.
-6. Execute o loop interativo no próprio notebook.
+2. Clone ou atualize o repositório.
+3. Configure `MODEL_PATH` para o modelo mesclado.
+4. Instale as dependências do notebook.
+5. Execute as células em ordem.
 
-## Fontes de dados
+## Verificação Local
 
-- `resources/MedQuAD/`: arquivos XML com perguntas e respostas, originados de `https://github.com/abachaa/MedQuAD`
-- `resources/pubmedqa/`: arquivos JSON com perguntas e respostas, originados de `https://pubmedqa.github.io/`
+```bash
+python3 -m compileall src
+git diff --check
+```
+
+O projeto não possui uma suíte de testes ou configuração de CI atualmente.
 
 ## Documentação
 
-- `documentos/wiki-projeto/`: memória ativa do projeto
-- `documentos/wiki-referencia/`: materiais de apoio e referências
+- [Wiki do projeto](documentos/wiki-projeto/README.md)
+- [Fluxos](documentos/wiki-projeto/fluxos.md)
+- [Decisões de arquitetura](documentos/wiki-projeto/decisoes-arquitetura.md)
+- [Plano do assistente com LangChain](documentos/especificacoes/plano-assistente-medico-langchain.md)
+- [Wiki de referência](documentos/wiki-referencia/README.md)

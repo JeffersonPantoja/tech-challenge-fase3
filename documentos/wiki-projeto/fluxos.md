@@ -79,7 +79,7 @@ Do not include markdown, explanations, or any text outside the JSON.
 5. Os usecases são instanciados diretamente no notebook.
 6. O loop interativo faz chamadas diretas a `AskMedicalAssistantUseCase`.
 
-## Fluxo T4 - Consulta a dados estruturados
+## Fluxo de Consulta a Dados Estruturados
 
 1. O `JsonPatientRecordDocumentReader` lê `resources/patient_records.jsonl`.
 2. Os prontuários são convertidos em documentos com metadata de `source` e `patient_id`.
@@ -87,10 +87,10 @@ Do not include markdown, explanations, or any text outside the JSON.
 4. Quando informado, o `patient_id` restringe a busca aos registros daquele paciente.
 5. O retriever preserva o `source` para rastreabilidade.
 
-## Fluxo T5 - Contextualização da resposta
+## Fluxo de Contextualização da Resposta
 
 1. O nó `translate_question` detecta o idioma e traduz a pergunta para inglês usando a API da OpenAI.
-2. O `AskMedicalAssistantWithRagUseCase` recebe a pergunta traduzida e os documentos recuperados pela T4.
+2. O `AskMedicalAssistantWithRagUseCase` recebe a pergunta traduzida e os documentos recuperados pela etapa de consulta.
 3. O grafo LangGraph monta o contexto clínico a partir de `patient_id`, `chief_complaint`, `history`, `medications`, `vitals` e `assessment`.
 4. O contexto inclui a origem (`source`) de cada documento recuperado.
 5. A pergunta em inglês e o contexto são inseridos no template textual usado no fine-tuning.

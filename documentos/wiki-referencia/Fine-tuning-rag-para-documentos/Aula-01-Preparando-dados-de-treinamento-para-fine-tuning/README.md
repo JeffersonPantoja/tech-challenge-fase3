@@ -28,4 +28,4 @@ O PDF `POSTECH - Aula 1.pdf` detalha a mesma etapa com foco em estruturação de
 
 - O conjunto de notebooks parece usar Google Drive/Colab como ambiente de execução.
 - A etapa foca em preparar dados limpos e reutilizáveis para fine-tuning.
-- Para a T3, esta aula é útil como referência de transformação de fonte bruta em formato estruturado de treino.
+- Esta aula é útil como referência de transformação de fonte bruta em formato estruturado de treino.

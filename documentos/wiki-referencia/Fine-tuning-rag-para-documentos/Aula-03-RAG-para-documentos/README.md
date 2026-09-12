@@ -21,4 +21,4 @@ O PDF `POSTECH - Aula 3.pdf` reforça a ideia de recuperar contexto antes da ger
 
 - Reforça a etapa de busca e recuperação de conhecimento sobre documentos.
 - Pode ser usado como referência para a camada de consulta do sistema.
-- Para a T3, é a referência mais próxima de enriquecer a pergunta com contexto recuperado antes de chamar o modelo local.
+- É a referência mais próxima de enriquecer a pergunta com contexto recuperado antes de chamar o modelo local.

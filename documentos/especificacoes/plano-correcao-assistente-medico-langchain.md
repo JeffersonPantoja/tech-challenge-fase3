@@ -14,30 +14,30 @@ Ajustar a implementação da fase 2 para que a inferência fique mais coerente c
 
 ## Plano de Correção
 
-### T1 - Alinhamento do prompt
+### Alinhamento do prompt
 
 - Usar o mesmo formato estrutural do dataset na inferência.
 - Preservar `ANSWER THE QUESTION.`, `Question` e `Answer`.
 - Evitar injetar histórico de conversa como contexto factual.
 
-### T2 - Separação de responsabilidades
+### Separação de responsabilidades
 
 - Manter `MedicalAssistantConversation` apenas como memória da sessão.
 - Não misturar mensagens anteriores com o bloco `[|Context|]`.
 - Preparar o fluxo para futura fonte factual separada.
 
-### T3 - Ajuste da T1
+### Ajuste do alinhamento
 
 - O notebook salva o modelo completo após o merge do adapter no base model.
 - A inferência usa sempre o diretório local final.
 - A documentação deve refletir que o runtime não depende mais do adapter em execução.
 
-### T4 - Revisão da CLI
+### Revisão da CLI
 
 - Verificar se `--base-model` será realmente usado no carregamento.
 - Caso não seja necessário, remover a opção para evitar ambiguidade.
 
-### T5 - Validação
+### Validação
 
 - Testar perguntas do dataset original.
 - Comparar a resposta gerada com o padrão esperado.

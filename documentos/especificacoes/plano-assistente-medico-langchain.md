@@ -20,7 +20,7 @@ Utilizar LangChain para criar um assistente médico que integre a LLM customizad
 ## Fluxo Geral
 
 1. O sistema carrega a LLM customizada.
-2. A T3 gera uma base de prontuários sintéticos usando `MedQuAD` e `PubMedQA` como entrada.
+2. A etapa de geração cria uma base de prontuários sintéticos usando `MedQuAD` e `PubMedQA` como entrada.
 3. A API da OpenAI é usada para transformar cada item de origem em um prontuário fictício estruturado.
 4. Cada registro é salvo em JSONL com rastreabilidade da fonte original.
 5. O LangChain orquestra a entrada do usuário, a consulta às bases estruturadas e a montagem do contexto.
@@ -28,20 +28,20 @@ Utilizar LangChain para criar um assistente médico que integre a LLM customizad
 
 ## Etapas do Projeto
 
-### T1 - Integração da LLM
+### Integração da LLM
 
 - Validar a presença de `resources/medqa-finetuned-model`.
 - Definir a forma de carregamento da LLM customizada no runtime.
 - Expor a LLM para uso pela camada LangChain.
 
-### T2 - Pipeline LangChain
+### Pipeline LangChain
 
 - Criar o pipeline de orquestração com LangChain.
 - Integrar a LLM customizada à cadeia de processamento.
 - Centralizar a composição da entrada e da saída do assistente.
 - Responder perguntas através do modelo carregado
 
-### T3 - Geração de prontuários sintéticos
+### Geração de prontuários sintéticos
 
 - Definir a estrutura padrão do prontuário sintético.
 - Usar `MedQuAD` e `PubMedQA` como base de origem dos casos.
@@ -49,19 +49,19 @@ Utilizar LangChain para criar um assistente médico que integre a LLM customizad
 - Manter o mesmo identificador de origem do dataset nos prontuários gerados.
 - Salvar o resultado consolidado em JSONL.
 
-### T4 - Consulta a dados estruturados
+### Consulta a dados estruturados
 
 - Consultar prontuários e registros estruturados.
 - Selecionar os dados relevantes do paciente para a resposta.
 - Preservar rastreabilidade da origem dos dados consultados.
 
-### T5 - Contextualização da resposta
+### Contextualização da resposta
 
 - Montar o contexto final com dados do paciente e a pergunta atual.
 - Gerar respostas contextualizadas pela LLM.
 - Manter o fluxo preparado para atualização contínua das informações do paciente.
 
-### Implementação T4 - Consulta a dados estruturados
+### Implementação da consulta a dados estruturados
 
 - Ler `resources/patient_records.jsonl` sem alterar o arquivo original.
 - Usar `patient_id` sequencial como identificador único durante a estruturação dos documentos RAG.
@@ -69,9 +69,9 @@ Utilizar LangChain para criar um assistente médico que integre a LLM customizad
 - Recuperar documentos por similaridade semântica e, quando informado, filtrar por `patient_id`.
 - Preservar o `source` dos documentos recuperados para rastreabilidade.
 
-### Implementação T5 - Contextualização da resposta
+### Implementação da contextualização da resposta
 
-- Receber os documentos recuperados pela T4.
+- Receber os documentos recuperados pela etapa de consulta.
 - Montar o contexto clínico com os dados estruturados do paciente.
 - Encadear recuperação, montagem de contexto e geração com LangGraph.
 - Usar o template textual compatível com o fine-tuning.
@@ -80,13 +80,13 @@ Utilizar LangChain para criar um assistente médico que integre a LLM customizad
 - Traduzir a resposta gerada pelo modelo fine-tuned para o idioma original usando a API da OpenAI.
 - Retornar a resposta junto com o `source` dos documentos utilizados.
 
-### T6 - Validação
+### Validação
 
 - Testar consultas com diferentes perfis de paciente e tipos de pergunta.
 - Verificar se a resposta usa os dados corretos do contexto.
 - Confirmar que a atualização das informações altera a resposta quando necessário.
 
-### T7 - Documentação
+### Documentação
 
 - Atualizar a wiki do projeto com o fluxo da nova fase.
 - Registrar as decisões de integração e consulta aos dados.

@@ -59,10 +59,10 @@ class BuildSyntheticPatientRecordsUseCase:
             batches = batches[: self._num_batches]
 
         for batch_index, batch in enumerate(batches, start=1):
-            print(f"[T3] lote {batch_index} iniciando com {len(batch)} registros")
+            print(f"Lote {batch_index} iniciando com {len(batch)} registros")
             synthetic_records = self._generate_batch_with_retry(batch_index, batch)
             if not synthetic_records:
-                print(f"[T3] lote {batch_index} ignorado após {self._MAX_BATCH_RETRIES} tentativas")
+                print(f"Lote {batch_index} ignorado após {self._MAX_BATCH_RETRIES} tentativas")
                 for record in batch:
                     checkpoint.failed_sources.add(record.source)
                 self._save_failed_checkpoint(checkpoint)
@@ -72,11 +72,11 @@ class BuildSyntheticPatientRecordsUseCase:
             for item_index, record in enumerate(batch, start=1):
                 absolute_index = ((batch_index - 1) * self._batch_size) + item_index
                 synthetic_record = synthetic_by_source[record.source]
-                print(f"[T3] processando {absolute_index}/{total}: {record.source}")
+                print(f"Processando {absolute_index}/{total}: {record.source}")
                 self._writer.append(synthetic_record)
                 checkpoint.processed_sources.add(record.source)
                 self._save_checkpoint(checkpoint)
-            print(f"[T3] lote {batch_index} concluído")
+            print(f"Lote {batch_index} concluído")
 
         return BuildDatasetResult(
             records_count=sum(len(batch) for batch in batches),
@@ -110,14 +110,14 @@ class BuildSyntheticPatientRecordsUseCase:
         for attempt in range(1, self._MAX_BATCH_RETRIES + 1):
             try:
                 if attempt > 1:
-                    print(f"[T3] reprocessando lote {batch_index}, tentativa {attempt}/{self._MAX_BATCH_RETRIES}")
+                    print(f"Reprocessando lote {batch_index}, tentativa {attempt}/{self._MAX_BATCH_RETRIES}")
                 return self._generator.generate_batch(batch)
             except ValueError as exc:
                 last_error = exc
-                print(f"[T3] validação do lote {batch_index} falhou: {exc}")
+                print(f"Validação do lote {batch_index} falhou: {exc}")
                 if attempt == self._MAX_BATCH_RETRIES:
                     break
 
         if last_error is not None:
-            print(f"[T3] lote {batch_index} descartado após {self._MAX_BATCH_RETRIES} tentativas")
+            print(f"Lote {batch_index} descartado após {self._MAX_BATCH_RETRIES} tentativas")
         return []

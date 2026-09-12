@@ -21,4 +21,4 @@ O PDF `POSTECH - Aula 2.pdf` complementa o notebook com a visão conceitual do a
 
 - Serve como base para adaptar um LLM ao domínio dos documentos do desafio.
 - Complementa os requisitos descritos em `requisitos_finetuning_llm.md`.
-- Para a T3, ajuda a entender a relação entre dataset estruturado, instrução e resposta final do modelo local.
+- Ajuda a entender a relação entre dataset estruturado, instrução e resposta final do modelo local.

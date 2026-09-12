@@ -29,20 +29,20 @@ Executar o fine-tuning em ambiente Google Colab, mantendo o código local respon
 
 ## Etapas do Projeto
 
-### T1 - Preparação local do dataset
+### Preparação local do dataset
 
 - Manter o fluxo atual do projeto em clean architecture.
 - Produzir o dataset em JSONL para consumo no Colab.
 - Garantir que cada linha siga o formato compatível com o modelo de treino.
 
 
-### T2 - Transferência manual para o Drive (odesenvolvedor fará essa etapa)
+### Transferência manual para o Drive (o desenvolvedor fará essa etapa)
 
 - Enviar `resources/finetuning_qa.jsonl` manualmente para o Google Drive.
 - Padronizar o caminho de acesso no notebook do Colab.
 - Manter o dataset fora do repositório remoto quando necessário por tamanho.
 
-### T3 - Notebook de fine-tuning no Colab
+### Notebook de fine-tuning no Colab
 
 - Instalar dependências no ambiente do Colab.
 - Carregar o dataset do Drive.
@@ -50,13 +50,13 @@ Executar o fine-tuning em ambiente Google Colab, mantendo o código local respon
 - Configurar o treino com parâmetros viáveis para Colab.
 - Executar o ajuste fino e persistir o resultado.
 
-### T4 - Verificação do modelo treinado
+### Verificação do modelo treinado
 
 - Rodar prompts de teste no próprio notebook.
 - Comparar comportamento antes e depois do ajuste fino.
 - Registrar observações, limitações e qualidade das respostas.
 
-### T5 - Documentação final
+### Documentação final
 
 - Registrar os parâmetros usados no treino.
 - Documentar o fluxo completo no repositório.
