@@ -113,8 +113,8 @@ O campo `plan` permanece no `patient_records.jsonl` e nos prontuários sintétic
 
 1. O `LangfuseObservabilityTracer` inicializa o tracing somente quando as credenciais locais estão configuradas.
 2. O `AskMedicalAssistantWithRagUseCase` envia callbacks ao grafo LangGraph e identifica cada execução com `request_id`.
-3. Os nós de tradução, recuperação, contexto e geração aparecem como etapas do trace.
-4. As chamadas diretas da OpenAI para tradução são registradas em traces próprios.
+3. Os nós de tradução, recuperação, contexto, geração e validação aparecem como etapas do trace.
+4. As chamadas diretas da OpenAI para tradução e revisão são registradas em traces próprios (`translate_question`, `translate_answer` e `review_medical_response`).
 5. Com `LANGFUSE_CAPTURE_CONTENT=false`, são registrados metadados e tamanhos, sem conteúdo clínico integral.
 6. Se o Langfuse estiver indisponível, o assistente continua executando normalmente.
 

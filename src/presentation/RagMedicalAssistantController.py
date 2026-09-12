@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
+
+from openai import OpenAI
 
 from src.application.AskMedicalAssistantWithRagUseCase import AskMedicalAssistantWithRagUseCase
 from src.application.LoadMedicalAssistantUseCase import LoadMedicalAssistantUseCase
@@ -10,6 +13,7 @@ from src.infrastructure.FaissPatientRecordRetriever import FaissPatientRecordRet
 from src.infrastructure.JsonPatientRecordDocumentReader import JsonPatientRecordDocumentReader
 from src.infrastructure.LocalMedicalAssistantRuntimeLoader import LocalMedicalAssistantRuntimeLoader
 from src.infrastructure.OpenAITranslator import OpenAITranslator
+from src.infrastructure.OpenAIMedicalResponseReviewer import OpenAIMedicalResponseReviewer
 from src.infrastructure.LangfuseObservabilityTracer import LangfuseObservabilityTracer
 
 
@@ -24,22 +28,43 @@ class RagMedicalAssistantController:
 
     def run(self) -> None:
         args = self._parser.parse_args()
+
         runtime = LoadMedicalAssistantUseCase(LocalMedicalAssistantRuntimeLoader()).execute(
             MedicalAssistantCommandOptions(model_dir=Path(args.model_dir))
         )
+
         documents = JsonPatientRecordDocumentReader().read(Path(args.patient_records))
         retriever = FaissPatientRecordRetriever(
             documents=documents,
             embedding_model=args.embedding_model,
             top_k=args.top_k,
         )
+
         observability = LangfuseObservabilityTracer()
-        translator = OpenAITranslator(model=args.translation_model, observability=observability)
+
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise EnvironmentError("OPENAI_API_KEY não definida")
+        openai_client = OpenAI(api_key=api_key)
+
+        translator = OpenAITranslator(
+            model=args.translation_model,
+            observability=observability,
+            client=openai_client,
+        )
+
+        response_reviewer = OpenAIMedicalResponseReviewer(
+            model=args.translation_model,
+            client=openai_client,
+            observability=observability,
+        )
+
         use_case = AskMedicalAssistantWithRagUseCase(
             runtime=runtime,
             retriever=retriever,
             translator=translator,
             observability=observability,
+            response_reviewer=response_reviewer,
         )
 
         print(f"Prontuários indexados: {len(documents)}")

@@ -9,6 +9,7 @@ from langchain_core.prompts import PromptTemplate
 
 from src.application.QuestionTranslator import QuestionTranslator
 from src.application.ObservabilityTracer import ObservabilityTracer
+from src.application.ports import MedicalResponseReviewer
 from src.application.PatientRecordRetriever import PatientRecordRetriever
 from src.domain.MedicalAssistantRuntime import MedicalAssistantRuntime
 from src.domain.PatientRecordDocument import PatientRecordDocument
@@ -32,11 +33,13 @@ class AskMedicalAssistantWithRagUseCase:
         retriever: PatientRecordRetriever,
         translator: QuestionTranslator,
         observability: ObservabilityTracer | None = None,
+        response_reviewer: MedicalResponseReviewer | None = None,
     ) -> None:
         self._runtime = runtime
         self._retriever = retriever
         self._translator = translator
         self._observability = observability
+        self._response_reviewer = response_reviewer
         self._response_chain = (
             PromptTemplate.from_template(
                 "ANSWER THE QUESTION.\n"
@@ -53,12 +56,14 @@ class AskMedicalAssistantWithRagUseCase:
         graph.add_node("build_context", self._build_context)
         graph.add_node("generate", self._generate)
         graph.add_node("translate_answer", self._translate_answer)
+        graph.add_node("review_output", self._review_output)
         graph.add_edge(START, "translate_question")
         graph.add_edge("translate_question", "retrieve")
         graph.add_edge("retrieve", "build_context")
         graph.add_edge("build_context", "generate")
         graph.add_edge("generate", "translate_answer")
-        graph.add_edge("translate_answer", END)
+        graph.add_edge("translate_answer", "review_output")
+        graph.add_edge("review_output", END)
         self._graph = graph.compile()
 
     def execute(
@@ -117,3 +122,13 @@ class AskMedicalAssistantWithRagUseCase:
             state["answer"], state["language"]
         )
         return {"answer": answer}
+
+    def _review_output(self, state: _RagState) -> _RagState:
+        if self._response_reviewer is None:
+            return {}
+        return {
+            "answer": self._response_reviewer.review(
+                record_context=state.get("context", ""),
+                answer=state["answer"],
+            )
+        }

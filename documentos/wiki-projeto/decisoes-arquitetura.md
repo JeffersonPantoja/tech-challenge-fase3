@@ -42,6 +42,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - Perguntas em português são traduzidas automaticamente pelo `OpenAITranslator` antes da recuperação, e a resposta é traduzida de volta para o idioma original depois da geração.
 - O Langfuse é utilizado como observabilidade opcional self-hosted; sua indisponibilidade não pode impedir a execução do assistente.
 - O tracing registra metadados por requisição e, por padrão, não captura o conteúdo clínico integral (`LANGFUSE_CAPTURE_CONTENT=false`).
+- A chamada OpenAI do nó `review_output` é registrada com o nome `review_medical_response`; o prompt completo só é capturado quando `LANGFUSE_CAPTURE_CONTENT=true`.
 - A interação do assistente acontece pelo terminal em modo interativo.
 - A conversa da sessão fica restrita ao controlador e não entra no prompt de geração.
 - Os módulos do projeto seguem nomes CamelCase para refletir diretamente as classes exportadas.

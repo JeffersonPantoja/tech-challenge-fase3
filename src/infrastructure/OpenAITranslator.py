@@ -11,11 +11,16 @@ from src.domain.TranslationResult import TranslationResult
 
 
 class OpenAITranslator(QuestionTranslator):
-    def __init__(self, model: str = "gpt-4o-mini", observability: LangfuseObservabilityTracer | None = None) -> None:
+    def __init__(
+        self,
+        model: str = "gpt-4o-mini",
+        observability: LangfuseObservabilityTracer | None = None,
+        client: OpenAI | None = None,
+    ) -> None:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise EnvironmentError("OPENAI_API_KEY não definida")
-        self._client = OpenAI(api_key=api_key)
+        self._client = client or OpenAI(api_key=api_key)
         self._model = model
         self._observability = observability
 
