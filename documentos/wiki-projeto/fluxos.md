@@ -97,7 +97,9 @@ Do not include markdown, explanations, or any text outside the JSON.
 6. O modelo local fine-tuned gera a resposta contextualizada em inglês.
 7. O runtime encerra a geração no marcador `[|eAnswer|]` e remove o marcador da saída.
 8. O nó `translate_answer` usa o `OpenAITranslator` e a API da OpenAI para traduzir a resposta para o idioma original.
-9. A resposta retorna o texto traduzido e as fontes utilizadas.
+9. O nó `review_output` envia o prontuário e a resposta traduzida para o `OpenAIMedicalResponseReviewer`.
+10. O revisor impede orientações de medicação ou tratamento e acrescenta a indicação de revisão automática.
+11. A resposta revisada retorna com as fontes utilizadas.
 
 O campo `plan` permanece no `patient_records.jsonl` e nos prontuários sintéticos, mas não é incluído no conteúdo indexado nem no contexto enviado ao modelo.
 
@@ -113,10 +115,12 @@ O campo `plan` permanece no `patient_records.jsonl` e nos prontuários sintétic
 
 1. O `LangfuseObservabilityTracer` inicializa o tracing somente quando as credenciais locais estão configuradas.
 2. O `AskMedicalAssistantWithRagUseCase` envia callbacks ao grafo LangGraph e identifica cada execução com `request_id`.
-3. Os nós de tradução, recuperação, contexto, geração e validação aparecem como etapas do trace.
+3. Os nós de tradução, recuperação, contexto, geração e revisão aparecem como etapas do trace.
 4. As chamadas diretas da OpenAI para tradução e revisão são registradas em traces próprios (`translate_question`, `translate_answer` e `review_medical_response`).
-5. Com `LANGFUSE_CAPTURE_CONTENT=false`, são registrados metadados e tamanhos, sem conteúdo clínico integral.
-6. Se o Langfuse estiver indisponível, o assistente continua executando normalmente.
+5. A geração local é registrada como `local_model_generation`.
+6. Cada geração registra tokens de entrada, saída e total. No modelo local, os tokens são contados pelo tokenizer; na OpenAI, são obtidos de `response.usage`.
+7. Com `LANGFUSE_CAPTURE_CONTENT=false`, são registrados metadados, tamanhos e contagens de tokens, sem conteúdo clínico integral.
+8. Se o Langfuse estiver indisponível, o assistente continua executando normalmente.
 
 ### Idioma do fluxo RAG
 

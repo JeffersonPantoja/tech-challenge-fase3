@@ -34,7 +34,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - O fluxo RAG usa `patient_records.jsonl` como base sem alterar o arquivo original; o `patient_id` sequencial identifica o paciente.
 - A recuperação usa embeddings Hugging Face com FAISS para recuperar registros por similaridade semântica.
 - O campo `plan` é preservado nos prontuários, mas fica fora do conteúdo indexado e do contexto RAG.
-- LangGraph orquestra a montagem do contexto e a geração da resposta.
+- LangGraph orquestra a montagem do contexto, a geração da resposta e a revisão automática da saída.
 - O template textual do dataset é reutilizado para reduzir o desalinhamento entre fine-tuning e inferência.
 - A API da OpenAI é usada para geração de prontuários sintéticos e, no fluxo RAG, pelo `OpenAITranslator` para detectar o idioma, traduzir a pergunta para inglês antes da recuperação e traduzir a resposta depois da geração; a resposta médica continua sendo gerada pela LLM local fine-tuned.
 - O assistente médico da fase 2 carrega sempre o modelo local mesclado salvo no notebook.
@@ -43,6 +43,7 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - O Langfuse é utilizado como observabilidade opcional self-hosted; sua indisponibilidade não pode impedir a execução do assistente.
 - O tracing registra metadados por requisição e, por padrão, não captura o conteúdo clínico integral (`LANGFUSE_CAPTURE_CONTENT=false`).
 - A chamada OpenAI do nó `review_output` é registrada com o nome `review_medical_response`; o prompt completo só é capturado quando `LANGFUSE_CAPTURE_CONTENT=true`.
+- O Langfuse registra os tokens de entrada, saída e total da geração local, da tradução e da revisão; os tokens da LLM local são contados pelo tokenizer e os da OpenAI vêm de `response.usage`.
 - A interação do assistente acontece pelo terminal em modo interativo.
 - A conversa da sessão fica restrita ao controlador e não entra no prompt de geração.
 - Os módulos do projeto seguem nomes CamelCase para refletir diretamente as classes exportadas.

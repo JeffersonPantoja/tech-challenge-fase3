@@ -26,7 +26,7 @@ Embeddings + FAISS + recuperação
 Tradução (`OpenAITranslator`) + contexto + geração + tradução
         |
         v
-Resposta com fontes e tracing no Langfuse
+Revisão automática + resposta com fontes e tracing no Langfuse
 ```
 
 ## Requisitos
