@@ -10,7 +10,7 @@ from src.infrastructure.LangfuseObservabilityTracer import LangfuseObservability
 from src.domain.TranslationResult import TranslationResult
 
 
-class OpenAIQuestionTranslator(QuestionTranslator):
+class OpenAITranslator(QuestionTranslator):
     def __init__(self, model: str = "gpt-4o-mini", observability: LangfuseObservabilityTracer | None = None) -> None:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:

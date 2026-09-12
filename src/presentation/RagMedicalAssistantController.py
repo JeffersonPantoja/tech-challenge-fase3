@@ -9,7 +9,7 @@ from src.domain.MedicalAssistantCommandOptions import MedicalAssistantCommandOpt
 from src.infrastructure.FaissPatientRecordRetriever import FaissPatientRecordRetriever
 from src.infrastructure.JsonPatientRecordDocumentReader import JsonPatientRecordDocumentReader
 from src.infrastructure.LocalMedicalAssistantRuntimeLoader import LocalMedicalAssistantRuntimeLoader
-from src.infrastructure.OpenAIQuestionTranslator import OpenAIQuestionTranslator
+from src.infrastructure.OpenAITranslator import OpenAITranslator
 from src.infrastructure.LangfuseObservabilityTracer import LangfuseObservabilityTracer
 
 
@@ -34,7 +34,7 @@ class RagMedicalAssistantController:
             top_k=args.top_k,
         )
         observability = LangfuseObservabilityTracer()
-        translator = OpenAIQuestionTranslator(model=args.translation_model, observability=observability)
+        translator = OpenAITranslator(model=args.translation_model, observability=observability)
         use_case = AskMedicalAssistantWithRagUseCase(
             runtime=runtime,
             retriever=retriever,
