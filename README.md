@@ -251,6 +251,23 @@ O notebook usa QLoRA, Unsloth, Transformers e `trl.SFTTrainer` para ajustar o mo
 6. Execute as células em ordem.
 7. Aguarde o merge e o salvamento do modelo final.
 
+### Avaliação do modelo fine-tuned
+
+O notebook avalia somente o modelo fine-tuned, sem comparar sua geração com o modelo base. A avaliação usa uma amostra aleatória de 500 exemplos do conjunto de teste, que foi separado do treino com `train_test_split`, e gera as respostas em batches.
+
+Resultado registrado:
+
+| Métrica | Resultado |
+| --- | ---: |
+| Exact Match | 0,0000 |
+| Token F1 | 0,3280 |
+| ROUGE-L | 0,2717 |
+| BERTScore F1 | 0,8354 |
+
+O `Exact Match` nulo e os valores moderados de `Token F1` e `ROUGE-L` indicam baixa correspondência literal com as respostas de referência. O `BERTScore F1` indica boa similaridade semântica geral, mas não comprova correção factual ou segurança clínica. A avaliação deve ser complementada por revisão humana especializada.
+
+Durante o carregamento do modelo usado pelo BERTScore, alguns pesos da camada de language modeling foram reportados como `UNEXPECTED`. Esse aviso é esperado ao carregar uma arquitetura de tarefa diferente e não impediu a avaliação.
+
 O diretório final precisa conter pelo menos:
 
 ```text

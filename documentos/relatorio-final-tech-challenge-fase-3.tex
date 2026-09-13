@@ -37,7 +37,7 @@
 
 \pagenumbering{roman}
 \begin{abstract}
-Este relatório descreve o desenvolvimento de um assistente médico experimental para a Fase 3 do Tech Challenge. A solução integra preparação de dados biomédicos, geração de prontuários sintéticos, fine-tuning de uma LLM local e um fluxo de recuperação aumentada por geração (RAG), orquestrado por LangChain e LangGraph. O dataset é construído a partir de MedQuAD e PubMedQA, com normalização, curadoria, deduplicação e rastreabilidade de origem. A aplicação recupera informações de prontuários estruturados usando embeddings e FAISS, contextualiza a pergunta e gera a resposta com o modelo local ajustado. Também foram implementados tradução multilíngue, revisão automática de segurança, identificação das fontes consultadas e observabilidade opcional com Langfuse. O trabalho apresenta a arquitetura, as decisões técnicas, os limites de atuação e o protocolo de avaliação. Como não foram registrados no repositório resultados numéricos de uma execução completa do treinamento, as conclusões quantitativas são tratadas como trabalho futuro; a avaliação documentada neste relatório distingue claramente implementação verificada de desempenho ainda não medido.
+ Este relatório descreve o desenvolvimento de um assistente médico experimental para a Fase 3 do Tech Challenge. A solução integra preparação de dados biomédicos, geração de prontuários sintéticos, fine-tuning de uma LLM local e um fluxo de recuperação aumentada por geração (RAG), orquestrado por LangChain e LangGraph. O dataset é construído a partir de MedQuAD e PubMedQA, com normalização, curadoria, deduplicação e rastreabilidade de origem. A aplicação recupera informações de prontuários estruturados usando embeddings e FAISS, contextualiza a pergunta e gera a resposta com o modelo local ajustado. Também foram implementados tradução multilíngue, revisão automática de segurança, identificação das fontes consultadas e observabilidade opcional com Langfuse. O trabalho apresenta a arquitetura, as decisões técnicas, os limites de atuação e uma avaliação quantitativa do modelo fine-tuned em amostra separada de teste. Os resultados mostram boa similaridade semântica geral, mas baixa correspondência literal, reforçando a necessidade de avaliação clínica complementar.
 
 \noindent\textbf{Palavras-chave:} inteligência artificial na saúde; fine-tuning; RAG; LangChain; LangGraph; segurança; prontuários sintéticos.
 \end{abstract}
@@ -248,12 +248,14 @@ Também foram verificadas, por inspeção da implementação, as propriedades ab
   \item o tracing não captura conteúdo clínico por padrão.
 \end{itemize}
 
-\subsection{Protocolo de avaliação proposto}
+\subsection{Protocolo de avaliação}
 
-Para uma avaliação experimental completa, recomenda-se executar o seguinte protocolo:
+O notebook executa a avaliação do modelo fine-tuned, sem inferência ou comparação com o modelo base, seguindo estas etapas:
 \begin{enumerate}
   \item separar um conjunto de perguntas de teste que não seja usado no treinamento;
   \item medir a perda de avaliação do \texttt{SFTTrainer} no conjunto de teste;
+  \item gerar respostas em batches para uma amostra aleatória de 500 exemplos do conjunto de teste;
+  \item calcular Exact Match, Token F1, ROUGE-L e BERTScore F1 com bibliotecas especializadas;
   \item criar casos de consulta com e sem filtro de paciente;
   \item verificar se a fonte recuperada corresponde ao paciente e à pergunta;
   \item testar perguntas em inglês e português, verificando tradução e retorno no idioma original;
@@ -264,7 +266,25 @@ Para uma avaliação experimental completa, recomenda-se executar o seguinte pro
 
 \subsection{Resultados e limitações}
 
-A implementação e a documentação comprovam a existência dos fluxos descritos, mas o repositório não contém logs de uma execução final do fine-tuning, valores de perda, acurácia, métricas de recuperação ou avaliação clínica por especialistas. Portanto, não é metodologicamente correto afirmar que o modelo atingiu determinado desempenho. O resultado desta entrega é uma base técnica executável e auditável, acompanhada de um protocolo para medir o desempenho em uma execução controlada.
+Foi realizada uma avaliação sobre 500 exemplos selecionados aleatoriamente do conjunto de teste. Os resultados foram:
+
+\begin{table}[ht]
+\centering
+\caption{Resultados da avaliação do modelo fine-tuned.}
+\label{tab:avaliacao-finetuned}
+\begin{tabular}{lc}
+Métrica & Resultado \\
+\hline
+Exact Match & 0,0000 \\
+Token F1 & 0,3280 \\
+ROUGE-L & 0,2717 \\
+BERTScore F1 & 0,8354 \\
+\end{tabular}
+\end{table}
+
+O Exact Match igual a zero e os valores moderados de Token F1 e ROUGE-L indicam baixa correspondência literal entre as respostas geradas e as referências. O BERTScore F1 de 0,8354 indica boa similaridade semântica geral, mas não garante correção factual. A inspeção qualitativa mostrou exemplos semanticamente próximos e também pelo menos um desvio temático relevante, o que impede interpretar o resultado como validação clínica. Não foram medidos neste experimento métricas de recuperação, perda final registrada ou avaliação por especialistas.
+
+Durante o carregamento do modelo usado pelo BERTScore, pesos da camada de language modeling foram reportados como \texttt{UNEXPECTED}. O aviso é esperado quando se carrega uma arquitetura de tarefa diferente para obter o modelo base de embeddings e não impediu o cálculo das métricas.
 
 As principais limitações são: dependência de GPU para treinamento e inferência prática; dependência da API OpenAI para tradução, geração sintética e revisão; qualidade condicionada aos dados públicos; embeddings inicialmente orientados ao inglês; e ausência de validação clínica formal. Essas limitações devem ser resolvidas antes de qualquer uso assistencial real.
 
@@ -296,7 +316,7 @@ O projeto implementou uma solução modular para o desafio de construir um assis
 
 Também foram incorporadas salvaguardas relevantes para o domínio: ausência do campo de plano terapêutico no contexto RAG, revisão automática de respostas, bloqueio de instruções diretas de tratamento, identificação das fontes e observabilidade configurável sem captura de conteúdo por padrão. Essas medidas reduzem riscos, mas não eliminam a necessidade de supervisão humana.
 
-Como próximo passo, a prioridade é executar o protocolo de avaliação com dados de teste separados, registrar perdas e métricas de recuperação, conduzir avaliação qualitativa especializada e testar o comportamento em cenários de erro. A solução deve permanecer como apoio à decisão, nunca como substituta da responsabilidade de profissionais de saúde.
+Como próximos passos, a prioridade é registrar a perda final, medir as métricas de recuperação, ampliar a avaliação para outros tamanhos de amostra, conduzir avaliação qualitativa especializada e testar o comportamento em cenários de erro. A solução deve permanecer como apoio à decisão, nunca como substituta da responsabilidade de profissionais de saúde.
 
 \clearpage
 \section*{Anexos}
