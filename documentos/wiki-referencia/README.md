@@ -30,6 +30,6 @@ Referências externas, materiais de estudo e documentos-base do projeto.
 
 ## Leituras de apoio
 
-- [Requisitos de Fine-Tuning](./requisitos_finetuning_llm.md)
+- [Requisitos 1 - Fine-tuning de LLM com dados médicos internos](../especificacoes/requisitos-fine-tuning-llm-dados-medicos-internos.md)
 - [Fluxos com dados estruturados e fine-tuning](./fluxos_finetuned_dados_estruturados.md)
 - [Resumo LLM Wiki / Karpathy](./resumo_karpathy_llm_wiki.md)

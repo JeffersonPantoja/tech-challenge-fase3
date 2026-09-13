@@ -6,7 +6,7 @@ Executar o fine-tuning em ambiente Google Colab, mantendo o código local respon
 
 ## Referências
 
-- `documentos/wiki-referencia/requisitos_finetuning_llm.md`
+- `documentos/especificacoes/requisitos-fine-tuning-llm-dados-medicos-internos.md`
 - `documentos/wiki-referencia/Fine-tuning-rag-para-documentos/Aula-01-Preparando-dados-de-treinamento-para-fine-tuning/README.md`
 - `documentos/wiki-referencia/Fine-tuning-rag-para-documentos/Aula-02-Fine-tuning-de-LLM-para-documentos/README.md`
 - `documentos/wiki-referencia/Fine-tuning-rag-para-documentos/Aula-03-RAG-para-documentos/README.md`
@@ -68,7 +68,7 @@ Executar o fine-tuning em ambiente Google Colab, mantendo o código local respon
 - `documentos/wiki-referencia/Fine-tuning-rag-para-documentos/Aula-01-Preparando-dados-de-treinamento-para-fine-tuning/README.md`
 - `documentos/wiki-referencia/Fine-tuning-rag-para-documentos/Aula-02-Fine-tuning-de-LLM-para-documentos/README.md`
 - `documentos/wiki-referencia/Fine-tuning-rag-para-documentos/Aula-03-RAG-para-documentos/README.md`
-- `documentos/wiki-referencia/requisitos_finetuning_llm.md`
+- `documentos/especificacoes/requisitos-fine-tuning-llm-dados-medicos-internos.md`
 
 ## Critérios de Conclusão
 

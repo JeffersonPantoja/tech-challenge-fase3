@@ -20,5 +20,5 @@ O PDF `POSTECH - Aula 2.pdf` complementa o notebook com a visão conceitual do a
 ## Relação com o projeto
 
 - Serve como base para adaptar um LLM ao domínio dos documentos do desafio.
-- Complementa os requisitos descritos em `requisitos_finetuning_llm.md`.
+- Complementa os requisitos descritos em `documentos/especificacoes/requisitos-fine-tuning-llm-dados-medicos-internos.md`.
 - Ajuda a entender a relação entre dataset estruturado, instrução e resposta final do modelo local.
