@@ -288,9 +288,10 @@ O grafo LangGraph executa os nós nesta ordem:
 ```text
 translate_question
   └── retrieve
-        └── build_context
-              └── generate
-                    └── translate_answer
+    └── build_context
+        └── generate
+              └── translate_answer
+                    └── review_output
 ```
 
 1. A API da OpenAI identifica o idioma da pergunta e a traduz para inglês.
@@ -298,7 +299,8 @@ translate_question
 3. O contexto é montado sem o campo `plan`.
 4. O modelo local fine-tuned gera a resposta em inglês.
 5. A resposta é traduzida para o idioma original pela API da OpenAI.
-6. O resultado retorna a resposta e as fontes consultadas.
+6. O nó `review_output` revisa a resposta usando o prontuário e acrescenta a indicação de revisão automática.
+7. O resultado retorna a resposta revisada e as fontes consultadas.
 
 O `patient_id` é mantido na sessão. Pressione Enter no campo do paciente para continuar usando o paciente atual, informe outro ID para trocá-lo ou use `/clear` para removê-lo.
 
@@ -330,7 +332,7 @@ python3 -m src.main_rag \
   --model-dir resources/medqa-finetuned-model \
   --patient-records resources/patient_records.jsonl \
   --embedding-model sentence-transformers/all-MiniLM-L6-v2 \
-  --translation-model gpt-4o-mini \
+  --openai-model gpt-4o-mini \
   --top-k 4
 ```
 
@@ -376,7 +378,13 @@ retrieve
 build_context
 generate
 translate_answer
+review_output
 ```
+
+O nó `local_model_generation` registra a geração do modelo local. As
+observações exibem tokens de entrada, saída e total. Para a LLM local, os
+tokens são contados pelo tokenizer; para as chamadas OpenAI, são obtidos de
+`response.usage`.
 
 Para visualizar prompts e respostas integrais durante desenvolvimento:
 

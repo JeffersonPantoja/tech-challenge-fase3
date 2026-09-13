@@ -1,0 +1,361 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{graphicx}
+
+\geometry{top=3cm,bottom=2cm,left=3cm,right=2cm}
+\linespread{1.3}
+\emergencystretch=3em
+\sloppy
+\setlength{\parindent}{1.25cm}
+\newcommand{\url}[1]{\texttt{#1}}
+
+\title{\textbf{Assistente Médico com LLM, LangChain e RAG}\
+\large Relatório técnico do Tech Challenge -- Fase 3}
+\author{Jefferson Antônio Pantoja Silva}
+\date{12 de setembro de 2026}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\Large TECH CHALLENGE -- FASE 3\par}
+  \vspace{3cm}
+  {\LARGE\bfseries Assistente Médico com LLM, LangChain e RAG\par}
+  \vspace{1cm}
+  {\large Relatório técnico final\par}
+  \vfill
+  {\large Jefferson Antônio Pantoja Silva\par}
+  \vspace{0.5cm}
+  {\large 12 de setembro de 2026\par}
+\end{titlepage}
+
+\pagenumbering{roman}
+\begin{abstract}
+Este relatório descreve o desenvolvimento de um assistente médico experimental para a Fase 3 do Tech Challenge. A solução integra preparação de dados biomédicos, geração de prontuários sintéticos, fine-tuning de uma LLM local e um fluxo de recuperação aumentada por geração (RAG), orquestrado por LangChain e LangGraph. O dataset é construído a partir de MedQuAD e PubMedQA, com normalização, curadoria, deduplicação e rastreabilidade de origem. A aplicação recupera informações de prontuários estruturados usando embeddings e FAISS, contextualiza a pergunta e gera a resposta com o modelo local ajustado. Também foram implementados tradução multilíngue, revisão automática de segurança, identificação das fontes consultadas e observabilidade opcional com Langfuse. O trabalho apresenta a arquitetura, as decisões técnicas, os limites de atuação e o protocolo de avaliação. Como não foram registrados no repositório resultados numéricos de uma execução completa do treinamento, as conclusões quantitativas são tratadas como trabalho futuro; a avaliação documentada neste relatório distingue claramente implementação verificada de desempenho ainda não medido.
+
+\noindent\textbf{Palavras-chave:} inteligência artificial na saúde; fine-tuning; RAG; LangChain; LangGraph; segurança; prontuários sintéticos.
+\end{abstract}
+
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+\section{Introdução}
+
+O desafio da Fase 3 propõe a criação de um assistente virtual médico treinado com conhecimento médico específico, capaz de apoiar dúvidas clínicas e consultar informações atualizadas do paciente. A proposta também exige fluxos automatizados e seguros, integração com LangChain, preparação e anonimização dos dados, logging, explainability e organização modular do código \cite{especificacao}.
+
+O projeto desenvolvido responde a esse desafio por meio de uma arquitetura em etapas. Primeiro, dados públicos de perguntas e respostas biomédicas são convertidos em um dataset textual compatível com treinamento supervisionado. Em seguida, os casos curados podem ser convertidos em prontuários fictícios estruturados. Por fim, o assistente combina uma LLM local ajustada com recuperação semântica dos prontuários, tradução de entrada e saída, revisão automática e rastreamento de execução.
+
+O sistema não pretende substituir a decisão clínica. Sua função é fornecer apoio informacional contextualizado, preservando a necessidade de validação humana, especialmente diante de perguntas sobre diagnóstico, medicamentos ou tratamento.
+
+\section{Objetivos}
+
+\subsection{Objetivo geral}
+Desenvolver e documentar um pipeline modular de assistente médico que integre preparação de dados, fine-tuning de LLM, consulta a prontuários sintéticos e mecanismos de segurança e observabilidade.
+
+\subsection{Objetivos específicos}
+\begin{itemize}
+  \item Ler e integrar as bases MedQuAD e PubMedQA em um dataset supervisionado.
+  \item Aplicar normalização, validação, curadoria, deduplicação e preservação da origem dos registros.
+  \item Gerar prontuários sintéticos em JSONL, com processamento em lotes, validação e retomada por checkpoint.
+  \item Ajustar o modelo \texttt{meta-llama/Llama-3.2-1B-Instruct} usando QLoRA e \texttt{SFTTrainer}.
+  \item Consultar prontuários por similaridade semântica, com opção de filtro por paciente.
+  \item Orquestrar tradução, recuperação, construção de contexto, geração e revisão em um grafo LangGraph.
+  \item Registrar fontes e metadados de execução sem expor conteúdo clínico integral por padrão.
+\end{itemize}
+
+\section{Fundamentação e requisitos}
+
+A especificação da Fase 3 organiza a entrega em quatro preocupações técnicas: fine-tuning com dados médicos, assistente com LangChain e base estruturada, segurança e validação, e organização modular do projeto. Também exige um dataset anonimizado ou sintético, um relatório técnico, um diagrama do fluxo e uma avaliação do modelo \cite{especificacao}.
+
+Como as fontes adotadas são bases públicas destinadas a pesquisa, o projeto priorizou curadoria técnica e geração de dados sintéticos para o cenário de prontuários. Essa escolha evita inserir dados reais de pacientes na demonstração. Os identificadores dos prontuários sintéticos são normalizados sequencialmente e a origem de cada caso é preservada no campo \texttt{source}.
+
+\section{Materiais e métodos}
+
+\subsection{Fontes de dados}
+
+Foram utilizadas duas bases públicas \cite{medquad,pubmedqa}, alinhadas às referências de datasets registradas na wiki do projeto:
+\begin{itemize}
+  \item \textbf{MedQuAD}: arquivos XML com foco temático e pares de pergunta e resposta provenientes de fontes do NIH.
+  \item \textbf{PubMedQA}: arquivos JSON com pergunta biomédica, contextos, rótulos e, quando disponível, resposta longa.
+\end{itemize}
+
+O leitor \texttt{MedQaSourcesReader} percorre os XML do MedQuAD e os JSON do PubMedQA. Para MedQuAD, o campo \texttt{Focus} é usado como contexto e cada par recebe uma origem no formato \texttt{MedQuAD:arquivo:pid}. Para PubMedQA, a resposta longa é preferida aos rótulos, enquanto os contextos são concatenados. A origem assume o formato \texttt{PubMedQA:arquivo:id}.
+
+\subsection{Curadoria e formato do dataset}
+
+O serviço \texttt{QARecordCurationService} executa as seguintes operações:
+\begin{enumerate}
+  \item remove espaços redundantes e normaliza os campos textuais;
+  \item descarta registros sem origem, pergunta ou resposta;
+  \item descarta perguntas ou respostas com menos de oito caracteres;
+  \item elimina duplicidades pela assinatura composta de pergunta, resposta e contexto;
+  \item registra estatísticas de itens mantidos e descartados por motivo.
+\end{enumerate}
+
+O resultado é escrito progressivamente em JSONL. O campo \texttt{text} segue o template que será reutilizado na inferência:
+
+\begin{verbatim}
+ANSWER THE QUESTION.
+[|Context|] ...[|eContext|]
+
+[|Question|] ...[|eQuestion|]
+
+[|Answer|] ...[|eAnswer|]
+\end{verbatim}
+
+A leitura incremental e a escrita progressiva reduzem o uso de memória. Essa separação também mantém os leitores de fonte e a curadoria independentes de LangChain, concentrando a abstração de orquestração na etapa em que ela é necessária.
+
+\subsection{Geração de prontuários sintéticos}
+
+Cada registro curado pode ser enviado em lote a um gerador baseado na API da OpenAI ou em uma LLM local. O retorno esperado é um vetor JSON com exatamente um item por origem e as chaves \texttt{source}, \texttt{patient\_id}, \texttt{chief\_complaint}, \texttt{history}, \texttt{medications}, \texttt{vitals}, \texttt{assessment} e \texttt{plan}.
+
+O lote é validado pela correspondência dos valores de \texttt{source}. Se houver item ausente, excedente ou duplicado, o lote é reprocessado até três vezes. Após as tentativas, um lote inválido é descartado e o fluxo continua. Os registros válidos são gravados incrementalmente e um checkpoint por origem permite retomar uma execução sem repetir lotes concluídos.
+
+Após a geração, o controlador de normalização substitui os identificadores por valores sequenciais. O procedimento preserva os demais campos e facilita a seleção explícita de um paciente durante a consulta.
+
+\subsection{Fine-tuning}
+
+O notebook de treinamento utiliza o modelo base \texttt{meta-llama/Llama-3.2-1B-Instruct}, carregado em 4 bits com Unsloth. A adaptação é feita com QLoRA, técnica de ajuste eficiente em memória, seguindo a trilha de preparação e fine-tuning da documentação de referência \cite{aula1,aula2,qlora}. Os parâmetros principais são apresentados na Tabela~\ref{tab:parametros}.
+
+\begin{table}[ht]
+\centering
+\caption{Parâmetros registrados no notebook de fine-tuning.}
+\label{tab:parametros}
+\begin{tabular}{ll}
+Parâmetro & Valor \\
+Rank LoRA ($r$) & 16 \\
+LoRA alpha & 32 \\
+LoRA dropout & 0,05 \\
+Batch por dispositivo & 2 \\
+Acumulação de gradientes & 8 \\
+Taxa de aprendizagem & $2\times10^{-4}$ \\
+Épocas & 1 \\
+Avaliação & ao final de cada época \\
+Salvamento & a cada 100 passos \\
+Precisão & BF16, ou FP16 quando necessário \\
+\end{tabular}
+\end{table}
+
+O dataset é dividido em treino e teste com \texttt{train\_test\_split}. O treinamento é executado pelo \texttt{trl.SFTTrainer}, com possibilidade de retomar o último checkpoint. Ao final, o adapter é mesclado ao modelo e o diretório resultante deve conter os arquivos necessários para inferência, incluindo configuração, pesos e tokenizer.
+
+\section{Arquitetura da solução}
+
+O código está organizado em camadas inspiradas em Clean Architecture:
+\begin{itemize}
+  \item \textbf{domain}: modelos imutáveis, como \texttt{QARecord} e \texttt{PatientRecordDocument};
+  \item \textbf{application}: casos de uso e portas, como construção do dataset e consulta RAG;
+  \item \textbf{infrastructure}: leitores, escritores, modelos locais, embeddings, integrações OpenAI e Langfuse;
+  \item \textbf{presentation}: controladores de linha de comando para os diferentes fluxos.
+\end{itemize}
+
+Essa divisão reduz o acoplamento entre regras de negócio e bibliotecas de infraestrutura. Por exemplo, o caso de uso RAG depende de uma porta de recuperação, e não diretamente da implementação FAISS.
+
+\subsection{Pipeline completo}
+
+\begin{center}
+\newcommand{\flowbox}[1]{\fbox{\parbox[c][9mm][c]{35mm}{\centering\small #1}}}
+\fbox{\begin{minipage}{0.88\linewidth}\centering
+\begin{tabular}{c@{\qquad}c@{\qquad}c}
+\multicolumn{3}{c}{\flowbox{MedQuAD + PubMedQA}}\\
+\multicolumn{3}{c}{$\downarrow$}\\
+\multicolumn{3}{c}{\flowbox{Leitura + curadoria}}\\
+$\swarrow$ & & $\downarrow$\\[-1pt]
+\flowbox{Prontuários sintéticos} & & \flowbox{Dataset JSONL}\\
+$\downarrow$ & & $\downarrow$\\[-1pt]
+\flowbox{Normalização + JSONL} & & \flowbox{QLoRA + SFTTrainer}\\
+$\downarrow$ & & $\downarrow$\\[-1pt]
+\flowbox{Embeddings + FAISS} & & \flowbox{fine-tuned model}\\[5pt]
+$\searrow$ & & $\downarrow$\\[-1pt]
+& $\longrightarrow$ & \flowbox{LangChain + LangGraph}\\
+& & $\downarrow$\\[-1pt]
+& & \flowbox{Resposta contextual}
+\end{tabular}
+\end{minipage}}
+\end{center}
+
+\subsection{Consulta a prontuários}
+
+O leitor \texttt{JsonPatientRecordDocumentReader} valida que cada registro possui uma origem e que não existem fontes duplicadas. O conteúdo indexado inclui identificador, queixa principal, histórico, medicamentos, sinais vitais e avaliação. O campo \texttt{plan} permanece armazenado no JSONL, mas é deliberadamente excluído do índice e do contexto enviado ao modelo, reduzindo o risco de a LLM reproduzir automaticamente uma conduta de tratamento.
+
+O retriever \texttt{FaissPatientRecordRetriever} utiliza \texttt{sentence-transformers/all-MiniLM-L6-v2} para embeddings e FAISS para busca semântica, conforme a abordagem de recuperação de contexto apresentada na aula de RAG \cite{aula3,faiss}. Sem filtro, são recuperados até quatro documentos relevantes. Com \texttt{patient\_id}, a busca é restrita aos documentos daquele paciente e depois ranqueada semanticamente.
+
+\subsection{Fluxo LangChain e LangGraph}
+
+O fluxo implementado pelo caso de uso \texttt{AskMedicalAssistantWithRagUseCase} é apresentado na Figura~\ref{fig:langgraph}. A composição de prompts e etapas encadeadas segue os conceitos de LangChain, enquanto os nós e transições de estado seguem o padrão de \texttt{StateGraph} estudado nos materiais de LangGraph \cite{langchain,langgraph}.
+
+\begin{figure}[ht]
+\centering
+\fbox{\begin{minipage}{0.68\linewidth}\centering
+Pergunta original\\$\downarrow$\\
+\texttt{translate\_question}\\$\downarrow$\\
+\texttt{retrieve}\\$\downarrow$\\
+\texttt{build\_context}\\$\downarrow$\\
+\texttt{generate} (LLM local)\\$\downarrow$\\
+\texttt{translate\_answer}\\$\downarrow$\\
+\texttt{review\_output}\\$\downarrow$\\
+Resposta + fontes consultadas
+\end{minipage}}
+\caption{Grafo de contextualização e revisão da resposta médica.}
+\label{fig:langgraph}
+\end{figure}
+
+O template de prompt usado na geração é compatível com o template do fine-tuning. A pergunta em português pode ser traduzida para inglês antes da recuperação, pois o treinamento, os prontuários sintéticos e o modelo de embeddings foram definidos inicialmente nesse idioma. Após a geração local, a resposta é traduzida para o idioma original.
+
+\section{Segurança, validação e explainability}
+
+A segurança foi tratada como uma camada adicional, e não como uma propriedade presumida da LLM. O revisor \texttt{OpenAIMedicalResponseReviewer} analisa a pergunta, o contexto e a resposta. Quando há pedido ou instrução sobre medicamento ou tratamento, a saída é substituída por uma orientação de revisão por profissional especializado. Nos demais casos, a resposta é mantida e recebe um parágrafo de revisão automática.
+
+Se a chamada de revisão falhar, existe um fallback determinístico que mantém a resposta e acrescenta a advertência de que diagnóstico e tratamento devem ser avaliados por profissional de saúde. Essa estratégia evita que a indisponibilidade de um componente externo interrompa completamente a aplicação, sem transformar a resposta em prescrição.
+
+As fontes são retornadas junto com a resposta no formato que associa o caminho de origem ao identificador do paciente. Assim, o usuário pode rastrear quais registros foram recuperados. O sistema não apresenta a LLM como autoridade clínica e não usa o campo \texttt{plan} no contexto de geração.
+
+Uma execução do assistente médico é apresentada no \textbf{Anexo A}. O terminal apresenta perguntas contextualizadas, manutenção do paciente na sessão, revisão automática e as fontes recuperadas para cada resposta.
+
+\subsection{Observabilidade}
+
+O Langfuse é opcional e self-hosted. Quando as credenciais estão configuradas, o trace registra o identificador da requisição, o paciente selecionado, as etapas do grafo, a geração local e as chamadas de tradução e revisão. Por padrão, \texttt{LANGFUSE\_CAPTURE\_CONTENT=false}, de modo que o sistema registra tamanhos e contagens de tokens sem capturar integralmente o conteúdo clínico. A captura integral só deve ser ativada em ambiente controlado.
+
+Também são registrados tokens de entrada, saída e total. No modelo local, a contagem é feita pelo tokenizer; nas chamadas OpenAI, utiliza-se o campo de uso retornado pela API. Se o Langfuse não estiver disponível, o assistente continua executando sem tracing.
+
+A evidência visual do trace registrado no Langfuse está disponível no \textbf{Anexo B}. A interface evidencia a execução do grafo, a geração pelo modelo local, a latência e a contagem de tokens do prompt e da conclusão.
+
+\section{Avaliação}
+
+\subsection{Verificações realizadas}
+
+O repositório fornece comandos de verificação estática:
+\begin{verbatim}
+python3 -m compileall src
+\end{verbatim}
+
+Também foram verificadas, por inspeção da implementação, as propriedades abaixo:
+\begin{itemize}
+  \item o dataset mantém a origem de cada item;
+  \item a curadoria contabiliza registros mantidos, vazios, curtos e duplicados;
+  \item os lotes de prontuários exigem exatamente uma ocorrência por origem;
+  \item o leitor de prontuários rejeita fontes ausentes ou duplicadas;
+  \item o retriever permite restrição por paciente;
+  \item o contexto não inclui o campo \texttt{plan};
+  \item o grafo executa as etapas em ordem e retorna as fontes recuperadas;
+  \item a revisão impede que a resposta seja apresentada como prescrição direta;
+  \item o tracing não captura conteúdo clínico por padrão.
+\end{itemize}
+
+\subsection{Protocolo de avaliação proposto}
+
+Para uma avaliação experimental completa, recomenda-se executar o seguinte protocolo:
+\begin{enumerate}
+  \item separar um conjunto de perguntas de teste que não seja usado no treinamento;
+  \item medir a perda de avaliação do \texttt{SFTTrainer} no conjunto de teste;
+  \item criar casos de consulta com e sem filtro de paciente;
+  \item verificar se a fonte recuperada corresponde ao paciente e à pergunta;
+  \item testar perguntas em inglês e português, verificando tradução e retorno no idioma original;
+  \item exercitar perguntas sobre medicamentos e tratamento para confirmar o bloqueio de segurança;
+  \item testar indisponibilidade da revisão e do Langfuse;
+  \item avaliar manualmente factualidade, relevância, ausência de prescrição e rastreabilidade.
+\end{enumerate}
+
+\subsection{Resultados e limitações}
+
+A implementação e a documentação comprovam a existência dos fluxos descritos, mas o repositório não contém logs de uma execução final do fine-tuning, valores de perda, acurácia, métricas de recuperação ou avaliação clínica por especialistas. Portanto, não é metodologicamente correto afirmar que o modelo atingiu determinado desempenho. O resultado desta entrega é uma base técnica executável e auditável, acompanhada de um protocolo para medir o desempenho em uma execução controlada.
+
+As principais limitações são: dependência de GPU para treinamento e inferência prática; dependência da API OpenAI para tradução, geração sintética e revisão; qualidade condicionada aos dados públicos; embeddings inicialmente orientados ao inglês; e ausência de validação clínica formal. Essas limitações devem ser resolvidas antes de qualquer uso assistencial real.
+
+\section{Reprodutibilidade e execução}
+
+O ambiente recomendado utiliza Python 3.12 ou superior e um ambiente virtual. A preparação básica é:
+\begin{verbatim}
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+\end{verbatim}
+
+Para gerar o dataset:
+\begin{verbatim}
+python3 -m src.main --resources-dir resources \\
+  --output resources/finetuning_qa.jsonl
+\end{verbatim}
+
+O notebook \texttt{src/notebooks/fine-tuning-colab.ipynb} executa o ajuste no Google Colab. Após salvar o modelo mesclado em \texttt{resources/medqa-finetuned-model/} e disponibilizar os prontuários em \texttt{resources/patient\_records.jsonl}, o assistente RAG pode ser iniciado com:
+\begin{verbatim}
+python3 -m src.main_rag
+\end{verbatim}
+
+Os notebooks de fine-tuning, assistente médico e geração de prontuários documentam as etapas que dependem de recursos externos. O README do projeto concentra as variáveis de ambiente, caminhos, comandos e opções de execução.
+
+\section{Conclusão}
+
+O projeto implementou uma solução modular para o desafio de construir um assistente médico com conhecimento biomédico ajustado e contexto de prontuários. O pipeline cobre a preparação de dados MedQuAD e PubMedQA, a curadoria com rastreabilidade, a geração de prontuários sintéticos, o fine-tuning com QLoRA, a recuperação FAISS e a orquestração LangChain/LangGraph.
+
+Também foram incorporadas salvaguardas relevantes para o domínio: ausência do campo de plano terapêutico no contexto RAG, revisão automática de respostas, bloqueio de instruções diretas de tratamento, identificação das fontes e observabilidade configurável sem captura de conteúdo por padrão. Essas medidas reduzem riscos, mas não eliminam a necessidade de supervisão humana.
+
+Como próximo passo, a prioridade é executar o protocolo de avaliação com dados de teste separados, registrar perdas e métricas de recuperação, conduzir avaliação qualitativa especializada e testar o comportamento em cenários de erro. A solução deve permanecer como apoio à decisão, nunca como substituta da responsabilidade de profissionais de saúde.
+
+\clearpage
+\section*{Anexos}
+\addcontentsline{toc}{section}{Anexos}
+
+\section*{Anexo A -- Execução do assistente médico}
+\addcontentsline{toc}{subsection}{Anexo A -- Execução do assistente médico}
+
+\begin{center}
+\centering
+\includegraphics[width=0.405\textheight,height=0.72\textheight]{documentos/assistente-medico.jpg}
+\par\smallskip
+{\small\textit{Execução do assistente médico no terminal, com respostas revisadas e fontes consultadas.}}
+\end{center}
+
+\clearpage
+\section*{Anexo B -- Observabilidade com Langfuse}
+\addcontentsline{toc}{subsection}{Anexo B -- Observabilidade com Langfuse}
+
+\begin{center}
+\centering
+\includegraphics[width=\linewidth,height=0.5625\linewidth]{documentos/langfuse-log.jpg}
+\par\smallskip
+{\small\textit{Trace do Langfuse com o fluxo LangGraph e a geração do modelo local.}}
+\end{center}
+
+\begin{thebibliography}{99}
+\bibitem{especificacao}
+POSTECH. \textit{8IADT -- Fase 3 -- Tech Challenge}. Documento de especificação fornecido para a atividade. São Paulo: FIAP, 2026.
+
+\bibitem{aula1}
+POSTECH. \textit{Preparando dados de treinamento para fine-tuning}. Aula 01 da trilha Fine-tuning e RAG para documentos. Material didático local disponível na wiki de referência do projeto. São Paulo: FIAP, 2026.
+
+\bibitem{aula2}
+POSTECH. \textit{Fine-tuning de LLM para documentos}. Aula 02 da trilha Fine-tuning e RAG para documentos. Material didático local disponível na wiki de referência do projeto. São Paulo: FIAP, 2026.
+
+\bibitem{aula3}
+POSTECH. \textit{RAG para documentos}. Aula 03 da trilha Fine-tuning e RAG para documentos. Material didático local disponível na wiki de referência do projeto. São Paulo: FIAP, 2026.
+
+\bibitem{langchain}
+POSTECH. \textit{Materiais de aula LangChain}. Aulas de introdução, document loaders, prompts, chains, integração com LLM e agents. Wiki de referência do projeto. São Paulo: FIAP, 2026.
+
+\bibitem{langgraph}
+POSTECH. \textit{Materiais de aula LangGraph}. StateGraph, nós, estado compartilhado e orquestração de fluxos. Wiki de referência do projeto. São Paulo: FIAP, 2026.
+
+\bibitem{medquad}
+ABACHA, Asma Ben; DEMNER-FUSHMAN, Dina. \textit{MedQuAD: Medical Question Answering Dataset}. Repositório GitHub. Disponível em: \url{https://github.com/abachaa/MedQuAD}. Acesso em: 12 set. 2026.
+
+\bibitem{pubmedqa}
+JIN, Qiao et al. PubMedQA: a research question answering dataset. In: \textit{Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing}. Hong Kong: Association for Computational Linguistics, 2019. Disponível em: \url{https://pubmedqa.github.io/}. Acesso em: 12 set. 2026.
+
+\bibitem{qlora}
+DETTMERS, Tim et al. QLoRA: efficient finetuning of quantized LLMs. arXiv, 2023. Disponível em: \url{https://arxiv.org/abs/2305.14314}. Acesso em: 12 set. 2026.
+
+\bibitem{faiss}
+JOHNSON, Jeff; DOUZE, Matthijs; JÉGOU, Hervé. Billion-scale similarity search with GPUs. \textit{IEEE Transactions on Big Data}, 2019. Disponível em: \url{https://arxiv.org/abs/1702.08734}. Acesso em: 12 set. 2026.
+
+\bibitem{projeto}
+PANTOJA SILVA, Jefferson Antônio. \textit{Tech Challenge -- Fase 3: README e wiki do projeto}. Repositório local, 2026.
+\end{thebibliography}
+
+\end{document}

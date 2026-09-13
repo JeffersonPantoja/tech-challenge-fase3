@@ -23,7 +23,7 @@ class RagMedicalAssistantController:
         self._parser.add_argument("--model-dir", default="resources/medqa-finetuned-model")
         self._parser.add_argument("--patient-records", default="resources/patient_records.jsonl")
         self._parser.add_argument("--embedding-model", default="sentence-transformers/all-MiniLM-L6-v2")
-        self._parser.add_argument("--translation-model", default="gpt-4o-mini")
+        self._parser.add_argument("--openai-model", default="gpt-4o-mini")
         self._parser.add_argument("--top-k", type=int, default=4)
 
     def run(self) -> None:
@@ -48,13 +48,13 @@ class RagMedicalAssistantController:
         openai_client = OpenAI(api_key=api_key)
 
         translator = OpenAITranslator(
-            model=args.translation_model,
+            model=args.openai_model,
             observability=observability,
             client=openai_client,
         )
 
         response_reviewer = OpenAIMedicalResponseReviewer(
-            model=args.translation_model,
+            model=args.openai_model,
             client=openai_client,
             observability=observability,
         )

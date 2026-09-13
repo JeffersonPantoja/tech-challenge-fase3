@@ -5,7 +5,7 @@ from typing import Callable
 
 import torch
 from langchain_core.runnables import RunnableLambda
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, GenerationConfig
 
 from src.application.ports import MedicalAssistantRuntimeLoader
 from src.domain.MedicalAssistantCommandOptions import MedicalAssistantCommandOptions
@@ -56,17 +56,29 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
         )
         if tokenizer.pad_token is None and tokenizer.eos_token is not None:
             tokenizer.pad_token = tokenizer.eos_token
+        # Keep the question and answer marker when a large RAG context is cut.
+        tokenizer.truncation_side = "left"
         return tokenizer
 
     def _load_model(self, model_dir: Path):
         if torch.cuda.is_available():
             dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            # A 3.6 GiB GPU cannot reliably host the merged model in fp16 while
+            # accelerate moves decoder layers during generation.
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_compute_dtype=dtype,
+            )
         else:
             dtype = torch.float32
+            quantization_config = None
 
         return AutoModelForCausalLM.from_pretrained(
             str(model_dir),
             dtype=dtype,
+            quantization_config=quantization_config,
             device_map="auto",
             low_cpu_mem_usage=True,
             local_files_only=True,
@@ -84,7 +96,12 @@ class LocalMedicalAssistantRuntimeLoader(MedicalAssistantRuntimeLoader):
     def _build_generate_text(self, tokenizer: object, model: object) -> Callable[[object], str]:
         def generate_text(prompt_value: object) -> str:
             prompt_text = prompt_value.to_string() if hasattr(prompt_value, "to_string") else str(prompt_value)
-            inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
+            inputs = tokenizer(
+                prompt_text,
+                return_tensors="pt",
+                truncation=True,
+                max_length=2048,
+            ).to(model.device)
             with torch.inference_mode():
                 output_ids = model.generate(**inputs)
 
