@@ -18,7 +18,7 @@
 5. O tokenizer processa o campo `text` e o notebook aplica `QLoRA` com `FastLanguageModel.get_peft_model`.
 6. O `trl.SFTTrainer` executa o treinamento com `TrainingArguments` e retomada de checkpoint quando existir.
 7. O adapter é mesclado no modelo base e o modelo completo é salvo no diretório final.
-8. Um prompt de validação é executado ao final do notebook.
+8. O modelo fine-tuned gera respostas para todo o conjunto de teste, e o notebook calcula exact match, F1 de tokens e ROUGE-L, além de exibir exemplos.
 
 ## Fluxo do assistente médico
 

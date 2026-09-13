@@ -53,8 +53,8 @@ Executar o fine-tuning em ambiente Google Colab, mantendo o código local respon
 ### Verificação do modelo treinado
 
 - Rodar prompts de teste no próprio notebook.
-- Comparar comportamento antes e depois do ajuste fino.
-- Registrar observações, limitações e qualidade das respostas.
+- Avaliar somente o modelo ajustado no conjunto de teste separado do treino.
+- Registrar exact match, F1 de tokens, ROUGE-L, observações e limitações.
 
 ### Documentação final
 
