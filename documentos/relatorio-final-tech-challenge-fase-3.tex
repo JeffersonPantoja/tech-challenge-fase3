@@ -152,6 +152,12 @@ Precisão & BF16, ou FP16 quando necessário \\
 \end{tabular}
 \end{table}
 
+O processo de ajuste fino combina QLoRA e o \texttt{SFTTrainer} para adaptar o modelo de linguagem com menor consumo computacional. Em vez de atualizar todos os parâmetros do modelo original, a maior parte dos pesos é mantida congelada e são acrescentados adaptadores LoRA, formados por matrizes de baixa dimensão treináveis. Dessa forma, somente uma fração dos parâmetros é ajustada para incorporar o comportamento desejado, reduzindo o custo de memória e armazenamento em comparação com o fine-tuning completo.
+
+A quantização é realizada pelo carregamento do modelo base em 4 bits. Essa representação reduz a memória necessária para manter os pesos do modelo durante o treinamento e torna a execução viável em uma GPU de ambiente Colab. Os adaptadores LoRA são aplicados às projeções internas do modelo, enquanto os pesos quantizados do modelo base permanecem preservados. O resultado é um modelo especializado por meio de uma quantidade reduzida de parâmetros treináveis, sem a necessidade de modificar integralmente a arquitetura original.
+
+O treinamento supervisionado é conduzido pelo \texttt{trl.SFTTrainer}, que organiza a apresentação dos exemplos, calcula a função de perda e atualiza os parâmetros treináveis dos adaptadores. Cada registro é representado como um texto contendo instrução, pergunta, contexto quando disponível e resposta esperada. O modelo aprende, assim, a produzir uma continuação adequada para a pergunta médica a partir desse padrão textual. A combinação entre quantização, adaptadores LoRA e treinamento supervisionado permite especializar a LLM para o domínio biomédico mantendo requisitos computacionais compatíveis com o ambiente utilizado.
+
 O dataset é dividido em treino e teste com \texttt{train\_test\_split}. O treinamento é executado pelo \texttt{trl.SFTTrainer}, com possibilidade de retomar o último checkpoint. Ao final, o adapter é mesclado ao modelo e o diretório resultante deve conter os arquivos necessários para inferência, incluindo configuração, pesos e tokenizer.
 
 \section{Arquitetura da solução}
