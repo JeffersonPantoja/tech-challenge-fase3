@@ -12,12 +12,15 @@
 \usepackage{listings}
 \usepackage{amsmath}
 
-\definecolor{navy}{HTML}{102A43}
-\definecolor{teal}{HTML}{0F766E}
-\definecolor{mint}{HTML}{DFF6F0}
-\definecolor{ink}{HTML}{243B53}
-\definecolor{slate}{HTML}{627D98}
-\definecolor{coral}{HTML}{D95D39}
+% Paleta inspirada na interface POS TECH: grafite, branco e magenta.
+\definecolor{navy}{HTML}{090909}
+\definecolor{teal}{HTML}{EC0A68}
+\definecolor{mint}{HTML}{F1F1F1}
+\definecolor{ink}{HTML}{E6E6E6}
+\definecolor{slate}{HTML}{A5A5A5}
+\definecolor{coral}{HTML}{B80852}
+\definecolor{darkbg}{HTML}{151515}
+\definecolor{panel}{HTML}{252525}
 
 \usetheme{default}
 \usefonttheme{professionalfonts}
@@ -26,18 +29,19 @@
   \hfill\scriptsize\color{slate}\insertshorttitle\quad|
   \quad\insertframenumber/\inserttotalframenumber\hspace{0.35cm}\vspace{0.2cm}}
 \setbeamertemplate{frametitle}{%
-  \vspace{0.25cm}\noindent\color{navy}\Large\bfseries\insertframetitle\par
+  \vspace{0.25cm}\noindent\color{mint}\Large\bfseries\insertframetitle\par
   \vspace{0.06cm}\noindent\color{teal}\rule{\textwidth}{1.2pt}}
-\setbeamercolor{normal text}{fg=ink,bg=white}
+\setbeamercolor{background canvas}{bg=darkbg}
+\setbeamercolor{normal text}{fg=ink,bg=darkbg}
 \setbeamercolor{structure}{fg=teal}
 \setbeamercolor{alerted text}{fg=coral}
 \setbeamercolor{block title}{fg=white,bg=navy}
-\setbeamercolor{block body}{fg=ink,bg=mint!45}
+\setbeamercolor{block body}{fg=ink,bg=panel}
 \setbeamercolor{author in head/foot}{fg=slate}
 
 \lstset{
   basicstyle=\ttfamily\scriptsize\color{ink},
-  backgroundcolor=\color{mint!45},
+  backgroundcolor=\color{panel},
   frame=single,
   rulecolor=\color{teal!40},
   breaklines=true,
@@ -58,18 +62,17 @@
     \fill[coral] (current page.north west) -- ++(2.4,0) -- ++(-2.4,-1.8) -- cycle;
   \end{tikzpicture}
   \vspace{1.25cm}
-  {\color{white}\fontsize{28}{34}\selectfont\bfseries Assistente\\[0.12cm] Médico\par}
+  {\color{white}\fontsize{28}{34}\selectfont\bfseries Assistente Médico\par}
   \vspace{0.35cm}
-  {\color{mint}\Large LLM local + RAG + segurança\par}
+  {\color{mint}\Large Tech Challenge -- Fase 3\par}
   \vfill
-  {\color{white}\large Tech Challenge -- Fase 3\par}
   {\color{mint}\small Jefferson Antônio Pantoja Silva | 12 de setembro de 2026\par}
 \end{frame}
 
 \begin{frame}{O desafio}
   \begin{columns}[T,onlytextwidth]
     \column{0.54\textwidth}
-    \Large\bfseries Como responder dúvidas médicas com contexto, rastreabilidade e segurança?
+    {\Large\bfseries Como responder dúvidas médicas com contexto, rastreabilidade e segurança?\par}
     \vspace{0.45cm}
     \normalsize
     O sistema deve combinar conhecimento biomédico, informações do paciente e mecanismos explícitos de proteção.
@@ -85,54 +88,74 @@
 \end{frame}
 
 \begin{frame}{Visão geral da solução}
-  \centering
-  \begin{tikzpicture}[node distance=0.48cm and 0.12cm, every node/.style={font=\scriptsize},
-    box/.style={draw=teal, fill=mint!60, rounded corners, minimum height=0.9cm, text width=1.85cm, align=center},
-    arrow/.style={->, very thick, color=navy}]
-    \node[box] (sources) {MedQuAD\\+ PubMedQA};
-    \node[box, right=of sources] (data) {Curadoria\\e dataset};
-    \node[box, right=of data] (records) {Prontuários\\sintéticos};
-    \node[box, right=of records] (model) {QLoRA\\+ LLM local};
-    \node[box, right=of model] (rag) {Embeddings\\+ FAISS};
-    \node[box, right=of rag] (answer) {LangGraph\\resposta segura};
-    \draw[arrow] (sources) -- (data);
-    \draw[arrow] (data) -- (records);
-    \draw[arrow] (data) -- (model);
-    \draw[arrow] (records) -- (rag);
-    \draw[arrow] (model) -- (answer);
-    \draw[arrow] (rag) -- (answer);
-  \end{tikzpicture}
-  \vspace{0.65cm}
-  \begin{block}{Ideia central}
-    O modelo gera a resposta, mas o contexto recuperado, as fontes e a revisão automática tornam o fluxo mais controlável e auditável.
-  \end{block}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.40\textwidth}
+    \vspace{0.8cm}
+    \begin{block}{Ideia central}
+      O modelo treinado com o dataset gera a resposta com base nas informações dos prontuários sintéticos criados a partir do dataset
+    \end{block}
+    \vspace{0.2cm}
+    \small\color{slate} O pipeline separa preparação, conhecimento do modelo e contexto do paciente.
+    \column{0.57\textwidth}
+    \centering
+    \resizebox{\linewidth}{!}{%
+    \begin{tikzpicture}[every node/.style={font=\tiny},
+      box/.style={draw=teal, fill=panel, text=ink, rounded corners, minimum height=0.52cm, text width=3.1cm, align=center},
+      topbox/.style={draw=teal, fill=panel, text=ink, rounded corners, minimum height=0.52cm, text width=3.6cm, align=center},
+      arrow/.style={->, very thick, color=teal}]
+      \node[topbox] (sources) at (0,2.10) {MedQuAD + PubMedQA};
+      \node[topbox] (curation) at (0,1.45) {Leitura + curadoria};
+      \node[box] (records) at (-1.75,0.78) {Prontuários sintéticos};
+      \node[box] (dataset) at (1.75,0.78) {Dataset JSONL};
+      \node[box] (normalize) at (-1.75,0.10) {Normalização + JSONL};
+      \node[box] (train) at (1.75,0.10) {QLoRA + SFTTrainer};
+      \node[box] (embed) at (-1.75,-0.58) {Embeddings + FAISS};
+      \node[box] (model) at (1.75,-0.58) {fine-tuned model};
+      \node[box] (lang) at (0,-1.26) {LangChain + LangGraph};
+      \node[box] (answer) at (0,-1.94) {Resposta contextual};
+      \draw[arrow] (sources) -- (curation);
+      \draw[arrow] (curation) -- (records);
+      \draw[arrow] (curation) -- (dataset);
+      \draw[arrow] (records) -- (normalize);
+      \draw[arrow] (normalize) -- (embed);
+      \draw[arrow] (dataset) -- (train);
+      \draw[arrow] (train) -- (model);
+      \draw[arrow] (model) -- (lang);
+      \draw[arrow] (embed) -- (lang);
+      \draw[arrow] (lang) -- (answer);
+    \end{tikzpicture}
+    }
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Dados: curadoria antes do modelo}
+  \small
   \begin{columns}[T,onlytextwidth]
-    \column{0.48\textwidth}
+    \column{0.42\textwidth}
     \textbf{Fontes públicas}
     \begin{itemize}
       \item MedQuAD: XML com perguntas e respostas do NIH.
       \item PubMedQA: JSON com pergunta, contexto e resposta biomédica.
-      \item Nenhum dado real de paciente é usado na demonstração.
     \end{itemize}
-    \column{0.48\textwidth}
-    \textbf{Tratamento aplicado}
-    \begin{itemize}
-      \item Normalização de texto e validação de campos.
-      \item Remoção de vazios, registros curtos e duplicidades.
-      \item Preservação de \texttt{source} para rastreabilidade.
-      \item Leitura e escrita incrementais em JSONL.
-    \end{itemize}
+    \column{0.54\textwidth}
+    \begin{block}{Curadoria}
+      Normalização, validação, remoção de vazios e duplicidades. O campo \texttt{source} é preservado para rastreabilidade e o JSONL é escrito incrementalmente.
+    \end{block}
+    \vspace{0.05cm}
   \end{columns}
   \vspace{0.08cm}
-  \begin{block}{Saída}
-    Cada linha contém \texttt{source} e \texttt{text}, usando o mesmo template na preparação e na inferência.
+  \begin{block}{Saída: \texttt{finetuning\_qa.jsonl}}
+      \scriptsize
+      \texttt{\{ "source": "MedQuAD:arquivo:pid",}\\[-0.02cm]
+      \texttt{  "text": "ANSWER THE QUESTION.}\\
+      \texttt{[|Context|] ...[|eContext|]}\\[-0.02cm]
+      \texttt{[|Question|] ...[|eQuestion|]}\\[-0.02cm]
+      \texttt{[|Answer|] ...[|eAnswer|]" \}}\\[0.08cm]
+      \textbf{Mesmo template na inferência:} reduz o desalinhamento entre treino e uso do modelo.
   \end{block}
 \end{frame}
 
-\begin{frame}{Fine-tuning eficiente no Colab}
+\begin{frame}{Fine-tuning no Colab}
   \begin{columns}[T,onlytextwidth]
     \column{0.55\textwidth}
     \begin{enumerate}
@@ -156,7 +179,28 @@
   \centering\small O treinamento é executado no Google Colab; a inferência usa o modelo local mesclado.
 \end{frame}
 
-\begin{frame}{Avaliação do modelo fine-tuned | 1,5 minutos}
+\begin{frame}{Prontuários sintéticos e rastreabilidade}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+    Um caso curado é convertido em um prontuário fictício com estrutura consistente:
+    \begin{itemize}
+      \item queixa principal e histórico;
+      \item medicamentos e sinais vitais;
+      \item avaliação e plano;
+      \item origem e identificador do paciente.
+      \item OpenAI API (gpt-4o-mini)
+    \end{itemize}
+    \column{0.46\textwidth}
+    \begin{block}{Confiabilidade do pipeline}
+      Os lotes são validados pela presença de exatamente uma ocorrência de cada \texttt{source}. Respostas inválidas podem ser reprocessadas até três vezes.
+    \end{block}
+    \begin{block}{Retomada}
+      O JSONL é gravado progressivamente e checkpoints evitam repetir registros já concluídos.
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Avaliação do modelo fine-tuned}
   \small
   \begin{columns}[T,onlytextwidth]
     \column{0.46\textwidth}
@@ -189,52 +233,6 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Prontuários sintéticos e rastreabilidade}
-  \begin{columns}[T,onlytextwidth]
-    \column{0.5\textwidth}
-    Um caso curado é convertido em um prontuário fictício com estrutura consistente:
-    \begin{itemize}
-      \item queixa principal e histórico;
-      \item medicamentos e sinais vitais;
-      \item avaliação e plano;
-      \item origem e identificador do paciente.
-    \end{itemize}
-    \column{0.46\textwidth}
-    \begin{block}{Confiabilidade do pipeline}
-      Os lotes são validados pela presença de exatamente uma ocorrência de cada \texttt{source}. Respostas inválidas podem ser reprocessadas até três vezes.
-    \end{block}
-    \begin{block}{Retomada}
-      O JSONL é gravado progressivamente e checkpoints evitam repetir registros já concluídos.
-    \end{block}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Arquitetura e fluxo RAG}
-  \begin{columns}[T,onlytextwidth]
-    \column{0.37\textwidth}
-    \textbf{Clean Architecture}
-    \begin{itemize}
-      \item \texttt{domain}: modelos imutáveis.
-      \item \texttt{application}: casos de uso e portas.
-      \item \texttt{infrastructure}: LLM, FAISS, OpenAI e Langfuse.
-      \item \texttt{presentation}: controladores CLI.
-    \end{itemize}
-    \column{0.59\textwidth}
-    \centering
-    \begin{tikzpicture}[node distance=0.12cm, every node/.style={font=\scriptsize},
-      flow/.style={draw=teal, fill=mint!65, rounded corners, minimum width=5.2cm, minimum height=0.48cm, align=center},
-      arr/.style={->, color=navy}]
-      \node[flow] (t) {translate\_question};
-      \node[flow, below=of t] (r) {retrieve: embeddings + FAISS};
-      \node[flow, below=of r] (c) {build\_context: registros relevantes};
-      \node[flow, below=of c] (g) {generate: LLM local fine-tuned};
-      \node[flow, below=of g] (a) {translate\_answer};
-      \node[flow, below=of a] (v) {review\_output + fontes};
-      \foreach \x/\y in {t/r,r/c,c/g,g/a,a/v}{\draw[arr] (\x) -- (\y);}
-    \end{tikzpicture}
-  \end{columns}
-\end{frame}
-
 \begin{frame}{Contexto clínico com controle de risco}
   \begin{columns}[T,onlytextwidth]
     \column{0.48\textwidth}
@@ -258,93 +256,37 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Demonstração ao vivo | 3 minutos}
+\begin{frame}{Arquitetura e fluxo RAG}
   \begin{columns}[T,onlytextwidth]
-    \column{0.52\textwidth}
-    \textbf{Sequência da execução}
-    \begin{enumerate}
-      \item Iniciar o assistente e selecionar um paciente.
-      \item Perguntar sobre um dado do prontuário.
-      \item Repetir a pergunta em português.
-      \item Solicitar medicamento ou tratamento.
-      \item Conferir resposta, aviso e fontes.
-    \end{enumerate}
-    \vspace{0.12cm}
-    \begin{block}{O que comprovar}
-      A resposta muda conforme o paciente, retorna as fontes recuperadas e não apresenta uma prescrição direta.
-    \end{block}
-    \column{0.44\textwidth}
-    \begin{lstlisting}
-python3 -m src.main_rag \
-  --model-dir resources/medqa-finetuned-model \
-  --patient-records resources/patient_records.jsonl \
-  --top-k 4
-    \end{lstlisting}
-    \vspace{0.15cm}
-    \small O idioma original é preservado: a pergunta pode ser traduzida para o inglês e a resposta volta ao idioma do usuário.
-    \vspace{0.12cm}
-    \textbf{Antes de começar:} modelo local, prontuários e API configurados.
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Leitura do trace no Langfuse | 2 minutos}
-  \scriptsize
-  \begin{columns}[T,onlytextwidth]
-    \column{0.52\textwidth}
-    \textbf{No dashboard, mostrar:}
-    \begin{enumerate}
-      \item Trace da requisição recém-executada.
-      \item Nós de tradução, recuperação e contexto.
-      \item \texttt{local\_model\_generation} e traduções.
-      \item \texttt{review\_medical\_response} no final.
-      \item Tokens, latência e metadados da requisição.
-    \end{enumerate}
-    \vspace{-0.12cm}
-    \begin{block}{Privacidade por padrão}
-      \texttt{LANGFUSE\_CAPTURE\_CONTENT=false}: registrar metadados sem capturar o conteúdo clínico integral.
-    \end{block}
-    \vspace{0.08cm}
-    \textbf{Contingência:} usar a captura de tela; o assistente continua sem tracing.
-    \column{0.43\textwidth}
-    \includegraphics[width=\textwidth,height=0.34\textheight,keepaspectratio]{langfuse-log.jpg}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Resultado, limites e próximos passos | 1 minuto}
-  \begin{columns}[T,onlytextwidth]
-    \column{0.48\textwidth}
-    \textbf{O que foi implementado}
+    \column{0.37\textwidth}
+    \textbf{Clean Architecture}
     \begin{itemize}
-      \item Pipeline de dados e curadoria.
-      \item Geração de prontuários sintéticos.
-      \item Fine-tuning documentado com QLoRA.
-      \item RAG com FAISS e filtro por paciente.
-      \item Segurança, fontes e tracing.
+      \item \texttt{domain}: modelos imutáveis.
+      \item \texttt{application}: casos de uso e portas.
+      \item \texttt{infrastructure}: LLM, FAISS, OpenAI e Langfuse.
+      \item \texttt{presentation}: controladores CLI.
     \end{itemize}
-    \column{0.48\textwidth}
-    \textbf{Próximas medições}
-    \begin{itemize}
-      \item Perda final do treinamento.
-      \item Qualidade da recuperação.
-      \item Avaliação clínica por especialistas.
-      \item Robustez multilíngue e fora do domínio.
-    \end{itemize}
+    \column{0.59\textwidth}
+    \centering
+    \begin{tikzpicture}[node distance=0.12cm, every node/.style={font=\scriptsize},
+      flow/.style={draw=teal, fill=panel, text=ink, rounded corners, minimum width=5.2cm, minimum height=0.48cm, align=center},
+      arr/.style={->, color=navy}]
+      \node[flow] (t) {translate\_question};
+      \node[flow, below=of t] (r) {retrieve: embeddings + FAISS};
+      \node[flow, below=of r] (c) {build\_context: registros relevantes};
+      \node[flow, below=of c] (g) {generate: LLM local fine-tuned};
+      \node[flow, below=of g] (a) {translate\_answer};
+      \node[flow, below=of a] (v) {review\_output + fontes};
+      \foreach \x/\y in {t/r,r/c,c/g,g/a,a/v}{\draw[arr] (\x) -- (\y);}
+    \end{tikzpicture}
   \end{columns}
-  \vspace{0.35cm}
-  \centering\Large\color{teal}\bfseries Base técnica executável e auditável, não um sistema de decisão clínica.
 \end{frame}
 
 \begin{frame}[plain]
-  \begin{tikzpicture}[remember picture,overlay]
-    \fill[navy] (current page.south west) rectangle (current page.north east);
-    \fill[teal] (current page.south east) -- ++(-5,0) -- ++(5,3.8) -- cycle;
-  \end{tikzpicture}
-  \vspace{1.5cm}
-  {\color{white}\fontsize{28}{34}\selectfont\bfseries Obrigado\par}
-  \vspace{0.35cm}
-  {\color{mint}\Large Perguntas?\par}
+  \centering
   \vfill
-  {\color{white}\small Projeto: Assistente Médico com LLM, RAG e LangChain\par}
+  {\color{teal}\fontsize{32}{38}\selectfont\bfseries Demonstração!\par}
+  \vfill
 \end{frame}
 
 \end{document}

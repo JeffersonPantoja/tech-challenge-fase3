@@ -6,13 +6,15 @@
 \usepackage{geometry}
 \usepackage{array}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=blue]{hyperref}
 
 \geometry{top=3cm,bottom=2cm,left=3cm,right=2cm}
 \linespread{1.3}
 \emergencystretch=3em
 \sloppy
 \setlength{\parindent}{1.25cm}
-\newcommand{\url}[1]{\texttt{#1}}
 
 \title{\textbf{Assistente Médico com LLM, LangChain e RAG}\
 \large Relatório técnico do Tech Challenge -- Fase 3}
@@ -33,6 +35,13 @@
   {\large Jefferson Antônio Pantoja Silva\par}
   \vspace{0.5cm}
   {\large 12 de setembro de 2026\par}
+  \vspace{0.5cm}
+  \fcolorbox{black}{gray!15}{%
+    \parbox{0.78\textwidth}{\centering
+      \textbf{Código-fonte no GitHub}\par
+      \vspace{0.12cm}
+      \href{https://github.com/JeffersonPantoja/tech-challenge-fase3}{\textcolor{blue}{github.com/JeffersonPantoja/tech-challenge-fase3}}
+    }}
 \end{titlepage}
 
 \pagenumbering{roman}
@@ -92,11 +101,11 @@ O leitor \texttt{MedQaSourcesReader} percorre os XML do MedQuAD e os JSON do Pub
 
 O serviço \texttt{QARecordCurationService} executa as seguintes operações:
 \begin{enumerate}
-  \item remove espaços redundantes e normaliza os campos textuais;
-  \item descarta registros sem origem, pergunta ou resposta;
-  \item descarta perguntas ou respostas com menos de oito caracteres;
-  \item elimina duplicidades pela assinatura composta de pergunta, resposta e contexto;
-  \item registra estatísticas de itens mantidos e descartados por motivo.
+  \item Remove espaços redundantes e normaliza os campos textuais;
+  \item Descarta registros sem origem, pergunta ou resposta;
+  \item Descarta perguntas ou respostas com menos de oito caracteres;
+  \item Elimina duplicidades pela assinatura composta de pergunta, resposta e contexto;
+  \item Registra estatísticas de itens mantidos e descartados por motivo.
 \end{enumerate}
 
 O resultado é escrito progressivamente em JSONL. O campo \texttt{text} segue o template que será reutilizado na inferência:
@@ -160,24 +169,32 @@ Essa divisão reduz o acoplamento entre regras de negócio e bibliotecas de infr
 \subsection{Pipeline completo}
 
 \begin{center}
-\newcommand{\flowbox}[1]{\fbox{\parbox[c][9mm][c]{35mm}{\centering\small #1}}}
-\fbox{\begin{minipage}{0.88\linewidth}\centering
-\begin{tabular}{c@{\qquad}c@{\qquad}c}
-\multicolumn{3}{c}{\flowbox{MedQuAD + PubMedQA}}\\
-\multicolumn{3}{c}{$\downarrow$}\\
-\multicolumn{3}{c}{\flowbox{Leitura + curadoria}}\\
-$\swarrow$ & & $\downarrow$\\[-1pt]
-\flowbox{Prontuários sintéticos} & & \flowbox{Dataset JSONL}\\
-$\downarrow$ & & $\downarrow$\\[-1pt]
-\flowbox{Normalização + JSONL} & & \flowbox{QLoRA + SFTTrainer}\\
-$\downarrow$ & & $\downarrow$\\[-1pt]
-\flowbox{Embeddings + FAISS} & & \flowbox{fine-tuned model}\\[5pt]
-$\searrow$ & & $\downarrow$\\[-1pt]
-& $\longrightarrow$ & \flowbox{LangChain + LangGraph}\\
-& & $\downarrow$\\[-1pt]
-& & \flowbox{Resposta contextual}
-\end{tabular}
-\end{minipage}}
+\begin{tikzpicture}[
+  box/.style={draw=black, minimum height=9mm, text width=43mm, align=center, font=\small},
+  topbox/.style={draw=black, minimum height=9mm, text width=50mm, align=center, font=\small},
+  arrow/.style={->, >=stealth, thick}
+]
+  \node[topbox] (sources) at (0,4.6) {MedQuAD + PubMedQA};
+  \node[topbox] (curation) at (0,3.45) {Leitura + curadoria};
+  \node[box] (records) at (-2.7,2.25) {Prontuários sintéticos};
+  \node[box] (dataset) at (2.7,2.25) {Dataset JSONL};
+  \node[box] (normalize) at (-2.7,1.15) {Normalização + JSONL};
+  \node[box] (train) at (2.7,1.15) {QLoRA + SFTTrainer};
+  \node[box] (embed) at (-2.7,0.05) {Embeddings + FAISS};
+  \node[box] (model) at (2.7,0.05) {fine-tuned model};
+  \node[box] (lang) at (0,-1.35) {LangChain + LangGraph};
+  \node[box] (answer) at (0,-3.05) {Resposta contextual};
+  \draw[arrow] (sources) -- (curation);
+  \draw[arrow] (curation) -- (records);
+  \draw[arrow] (curation) -- (dataset);
+  \draw[arrow] (records) -- (normalize);
+  \draw[arrow] (normalize) -- (embed);
+  \draw[arrow] (dataset) -- (train);
+  \draw[arrow] (train) -- (model);
+  \draw[arrow] (embed) -- (lang);
+  \draw[arrow] (model) -- (lang);
+  \draw[arrow] (lang) -- (answer);
+\end{tikzpicture}
 \end{center}
 
 \subsection{Consulta a prontuários}
@@ -338,11 +355,24 @@ Como próximos passos, a prioridade é registrar a perda final, medir as métric
 
 \begin{center}
 \centering
-\includegraphics[width=\linewidth,height=0.5625\linewidth]{documentos/langfuse-log.jpg}
+% A imagem original tem proporção 1920:1080.
+\includegraphics[width=0.95\linewidth,height=0.534375\linewidth]{documentos/langfuse-log.jpg}
 \par\smallskip
 {\small\textit{Trace do Langfuse com o fluxo LangGraph e a geração do modelo local.}}
 \end{center}
 
+\section*{Anexo C -- Avaliação do modelo fine-tuned}
+\addcontentsline{toc}{subsection}{Anexo C -- Avaliação do modelo fine-tuned}
+
+\begin{center}
+\centering
+% A imagem original tem proporção 808:259.
+\includegraphics[width=0.95\linewidth,height=0.3045\linewidth]{documentos/avaliacao-fine-tuned-model.jpg}
+\par\smallskip
+{\small\textit{Resultado da avaliação do modelo fine-tuned no conjunto de teste.}}
+\end{center}
+
+\clearpage
 \begin{thebibliography}{99}
 \bibitem{especificacao}
 POSTECH. \textit{8IADT -- Fase 3 -- Tech Challenge}. Documento de especificação fornecido para a atividade. São Paulo: FIAP, 2026.
