@@ -1,18 +1,19 @@
 # Repository Guide
 
-## Run and verify
-- Use Python 3.12+ with `.venv`: `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`.
-- Generate the dataset with `python3 -m src.main --resources-dir resources --output resources/finetuning_qa.jsonl`.
-- Baseline verification is `python3 -m compileall src`; there is no repo test/lint/typecheck/CI config.
+## Setup and verification
+- Use Python 3.12+ from the repository root with `.venv`: `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`.
+- There is no test, lint, typecheck, or CI configuration. Run `python3 -m compileall src` and `git diff --check` for baseline verification.
+- `.env` is not loaded automatically; export variables or use `set -a; source .env; set +a`. Never commit `.env` or API keys.
 
-## Data pipeline
-- Raw inputs live in `resources/MedQuAD/` and `resources/pubmedqa/`; the CLI reads those paths directly.
-- The dataset writer outputs JSONL with one object per line: `source` and `text`.
-- Do not change the `ANSWER THE QUESTION.` prompt or `[|...|]` markers without updating the matching Colab notebook.
-- `src/presentation/MedQaController.py` wires the dataset CLI; `BuildMedQaDatasetUseCase` owns read -> curate -> write.
+## Inputs and commands
+- `resources/MedQuAD/` and `resources/pubmedqa/` are required local inputs and are not versioned. Generate the QA dataset with `python3 -m src.main --resources-dir resources --output resources/finetuning_qa.jsonl`.
+- Generate synthetic records with `python3 -m src.main_synthetic_records --backend openai --resources-dir resources --output resources/patient_records.jsonl`; it resumes from checkpoints by default. Use `--no-resume` to restart, and `OPENAI_API_KEY` is required for the OpenAI backend.
+- Normalize IDs with `python3 -m src.main_normalize_patient_ids --input resources/patient_records.jsonl --output resources/patient_records_sequential.jsonl`.
+- The local assistant entrypoint is `python3 -m src.main_langchain --model-dir resources/medqa-finetuned-model`; the RAG entrypoint is `python3 -m src.main_rag --model-dir resources/medqa-finetuned-model --patient-records resources/patient_records.jsonl` and requires `OPENAI_API_KEY`.
+- The assistant entrypoints require a locally generated merged model containing `config.json`, `model.safetensors`, and tokenizer files. Fine-tuning is performed by `src/notebooks/fine-tuning-colab.ipynb`.
 
-## Code structure
-- Keep `domain` for immutable models, `application` for ports/use cases, `infrastructure` for parsing/curation/writing, and `presentation` for CLI/composition.
-- Source modules intentionally use CamelCase filenames that match their exported classes.
-- `src/main.py` runs dataset generation; `src/main_langchain.py` runs the medical assistant CLI.
-- `documentos/wiki-projeto/` is the project decision log; update it for important architectural changes.
+## Boundaries and contracts
+- Keep immutable models in `src/domain`, ports and use cases in `src/application`, concrete I/O/LLM/RAG integrations in `src/infrastructure`, and CLI composition in `src/presentation`.
+- Module filenames intentionally use CamelCase to match exported class names.
+- Dataset output is UTF-8 JSONL with `source` and `text`. Preserve `ANSWER THE QUESTION.` and the `[|Context|]`, `[|Question|]`, and `[|Answer|]` markers unless the matching Colab notebook is updated too.
+- Important architectural decisions belong in `documentos/wiki-projeto/`; keep that wiki synchronized with non-trivial changes.
