@@ -27,6 +27,11 @@ O código foi organizado em clean architecture para manter baixo acoplamento.
 - A curadoria foi isolada em `QARecordCurationService` para aplicar limpeza, deduplicação e métricas de descarte antes da escrita final.
 - Na geração de prontuários sintéticos, a curadoria ajuda a limpar a entrada, mas o valor principal vem do lote validado por `source` e do checkpoint de falhas.
 - O treino fica concentrado no notebook `src/notebooks/fine-tuning-colab.ipynb`, que usa `unsloth`, `datasets`, `transformers` e `trl.SFTTrainer` com QLoRA.
+- A geração de prontuários suporta dois backends intercambiáveis: `OpenAISyntheticPatientRecordGenerator` e `LlamaSyntheticPatientRecordGenerator`.
+- O modelo local usa quantização 4-bit em CUDA, BF16 ou FP16 conforme a GPU e FP32 em CPU; a geração é determinística, limitada a 128 novos tokens no assistente e com penalidade de repetição 1,05.
+- A tradução e a revisão médica dependem da OpenAI no fluxo RAG, enquanto a geração principal permanece na LLM local.
+- O Langfuse é opcional e falhas de observabilidade não interrompem a execução.
+- O assistente simples usa somente a LLM local; o assistente RAG acrescenta tradução, recuperação FAISS, contexto clínico, revisão e fontes.
 - A etapa de Geração de Prontuários Sintéticos gera prontuários fictícios a partir de `MedQuAD` e `PubMedQA`, preservando `source` para rastreabilidade.
 - A etapa de Geração de Prontuários Sintéticos trabalha em lotes, valida o retorno por `source`, tenta novamente em caso de resposta inválida e descarta o lote após 3 falhas.
 - A escrita dos prontuários sintéticos é em JSONL para facilitar consumo posterior pelo assistente.

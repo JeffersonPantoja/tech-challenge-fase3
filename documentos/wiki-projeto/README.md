@@ -13,6 +13,9 @@ Memória ativa do projeto. Esta pasta concentra decisões, visão geral, conven�
 ## Fluxos
 
 - [Fluxos](./fluxos.md)
+- [Execução pela CLI](./execucao-cli.md)
+- [Recuperação aumentada por geração](./rag.md)
+- [Segurança e limitações](./seguranca-e-limitacoes.md)
 - [Notebook de Fine-tuning no Colab](../../src/notebooks/fine-tuning-colab.ipynb)
 - [Notebook de Assistente Médico no Colab](../../src/notebooks/medical-assistant-colab.ipynb)
 
@@ -25,6 +28,7 @@ Memória ativa do projeto. Esta pasta concentra decisões, visão geral, conven�
 ## Padrões
 
 - [Padrões](./padroes.md)
+- [Contratos de dados](./contratos-dados.md)
 
 ## Curadoria
 

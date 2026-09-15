@@ -20,6 +20,19 @@
 7. O adapter é mesclado no modelo base e o modelo completo é salvo no diretório final.
 8. O modelo fine-tuned gera respostas em batches para uma amostra embaralhada do conjunto de teste, e o notebook calcula exact match, F1 de tokens, ROUGE-L e BERTScore com bibliotecas especializadas, além de exibir exemplos.
 
+## Fluxo de geração sintética e retomada
+
+1. O `BuildSyntheticPatientRecordsUseCase` aplica a mesma curadoria do dataset antes de criar os lotes.
+2. Cada lote é enviado ao backend escolhido: OpenAI ou Llama local.
+3. O retorno precisa conter exatamente uma saída válida para cada `source` do lote.
+4. Falhas de validação fazem o caso de uso repetir o lote até três vezes; o gerador OpenAI também pode repetir internamente uma chamada até três vezes.
+5. Um lote que continua inválido tem suas fontes gravadas no checkpoint de falhas e é ignorado.
+6. Cada registro válido é anexado ao JSONL e sua fonte é gravada no checkpoint normal.
+7. Com retomada habilitada, fontes presentes nos checkpoints não são selecionadas novamente.
+8. `records_count` representa os registros dos lotes selecionados nesta execução, inclusive lotes posteriormente descartados; não é uma contagem garantida de registros gravados.
+
+O checkpoint normal tem o formato `{"processed_sources": [], "failed_sources": []}`. O checkpoint de falhas tem o formato `{"failed_sources": []}`. Os caminhos padrão são `resources/patient_records.checkpoint.json` e `resources/patient_records.failed.checkpoint.json`.
+
 ## Fluxo do assistente médico
 
 1. O `MedicalAssistantController` lê os argumentos da CLI.
@@ -102,6 +115,8 @@ Do not include markdown, explanations, or any text outside the JSON.
 11. A resposta revisada retorna com as fontes utilizadas.
 
 O campo `plan` permanece no `patient_records.jsonl` e nos prontuários sintéticos, mas não é incluído no conteúdo indexado nem no contexto enviado ao modelo.
+
+O backend de prontuários pode ser selecionado por `--backend openai|llama`. A normalização de IDs é um fluxo posterior e independente: `main_normalize_patient_ids` lê o JSONL gerado, substitui os IDs por valores iniciados em `1` e grava outro arquivo.
 
 ### Memória do paciente na sessão
 

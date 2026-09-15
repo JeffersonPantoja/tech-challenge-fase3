@@ -238,7 +238,7 @@
     \column{0.48\textwidth}
     \begin{block}{Recuperação}
       \begin{itemize}
-        \item Busca semântica com \texttt{all-MiniLM-L6-v2}.
+        \item Embeddings com \texttt{all-MiniLM-L6-v2} e busca vetorial com FAISS.
         \item Até quatro documentos relevantes.
         \item Filtro opcional pelo \texttt{patient\_id}.
         \item Fontes retornam junto da resposta.
@@ -271,12 +271,12 @@
     \begin{tikzpicture}[node distance=0.12cm, every node/.style={font=\scriptsize},
       flow/.style={draw=teal, fill=panel, text=ink, rounded corners, minimum width=5.2cm, minimum height=0.48cm, align=center},
       arr/.style={->, color=navy}]
-      \node[flow] (t) {translate\_question};
+      \node[flow] (t) {translate\_question: OpenAI API};
       \node[flow, below=of t] (r) {retrieve: embeddings + FAISS};
       \node[flow, below=of r] (c) {build\_context: registros relevantes};
       \node[flow, below=of c] (g) {generate: LLM local fine-tuned};
-      \node[flow, below=of g] (a) {translate\_answer};
-      \node[flow, below=of a] (v) {review\_output + fontes};
+      \node[flow, below=of g] (a) {translate\_answer: OpenAI API};
+      \node[flow, below=of a] (v) {review\_output: OpenAI API + fontes};
       \foreach \x/\y in {t/r,r/c,c/g,g/a,a/v}{\draw[arr] (\x) -- (\y);}
     \end{tikzpicture}
   \end{columns}

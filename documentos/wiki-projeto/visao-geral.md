@@ -12,7 +12,25 @@ O fluxo geral começa com duas bases principais, que também servem como origem 
 - `resources/MedQuAD/`: base XML obtida de `https://github.com/abachaa/MedQuAD`
 - `resources/pubmedqa/`: base JSON obtida de `https://pubmedqa.github.io/`
 - `resources/finetuning_qa.jsonl`: dataset final gerado para treino
-- `resources/patient_records.jsonl`: base sintética planejada para prontuários fictícios
+- `resources/patient_records.jsonl`: prontuários sintéticos gerados para o fluxo RAG
+
+## Módulos de `src`
+
+### Domain
+
+Modelos imutáveis e resultados: `QARecord`, `CurationResult`, `CurationStats`, `BuildDatasetResult`, `SyntheticPatientRecord`, `PatientRecordDocument`, `RagAnswer`, `TranslationResult`, `MedicalAssistantRuntime`, `MedicalAssistantConversation`, `MedicalAssistantMessage`, `SyntheticPatientRecordsCheckpoint` e os objetos de opções e resultados dos comandos.
+
+### Application
+
+Casos de uso: construção do dataset, geração de prontuários, normalização de IDs, carregamento do runtime, consulta simples, consulta RAG e interfaces para leitura, escrita, geração, tradução, recuperação, revisão, observabilidade e checkpoints.
+
+### Infrastructure
+
+Implementações de leitura e escrita JSONL, parsing de MedQuAD e PubMedQA, curadoria, geradores de prontuários via OpenAI e Llama, carregamento da LLM local, integração LangChain, embeddings com FAISS, tradução, revisão médica e tracing Langfuse.
+
+### Presentation
+
+Controllers de dataset, prontuários sintéticos, normalização, assistente simples e assistente RAG. Cada controller monta as dependências da aplicação e expõe uma CLI própria.
 
 ## Estrutura dos dados
 
@@ -84,3 +102,5 @@ Objetivo do fluxo atual:
 6. Gerar prontuários sintéticos a partir de `MedQuAD` e `PubMedQA` para a etapa de Geração de Prontuários Sintéticos do assistente médico
 7. Processar os registros sintéticos em lotes com validação, retry e descarte de lotes inválidos
 8. Salvar o modelo mesclado no Google Drive e usá-lo no assistente médico interativo
+
+Os pontos de entrada são `src.main`, `src.main_synthetic_records`, `src.main_normalize_patient_ids`, `src.main_langchain` e `src.main_rag`. Os parâmetros e variáveis de ambiente estão detalhados em [Execução pela CLI](./execucao-cli.md).

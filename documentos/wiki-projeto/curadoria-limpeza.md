@@ -13,6 +13,9 @@ Os datasets públicos usados no projeto não exigem anonimização pesada de LGP
 - Na geração de prontuários sintéticos, a curadoria é útil para normalizar, remover vazios e evitar lixo de entrada, mas não é o principal ganho do fluxo.
 - Na etapa de Geração de Prontuários Sintéticos, a validação do lote exige `source` único por item; o retorno inválido é reprocessado antes de ser descartado.
 - Os resultados da curadoria ficam em `CurationResult` e `CurationStats`, ambos no `domain`.
+- A normalização textual usa `" ".join(text.split())`, removendo espaços redundantes e espaços nas extremidades.
+- Perguntas ou respostas com menos de oito caracteres são descartadas.
+- A assinatura de deduplicação é formada por `question`, `answer` e `context`; `source` não participa dessa chave.
 
 ## Plano de implementação
 
@@ -22,6 +25,10 @@ Os datasets públicos usados no projeto não exigem anonimização pesada de LGP
 4. Filtrar casos com respostas inconsistentes ou incompletas.
 5. Preservar `source` para rastreabilidade.
 6. Registrar contagem de registros descartados por motivo.
+
+## Estatísticas
+
+`CurationStats` registra `kept`, `discarded_empty_fields`, `discarded_duplicates` e `discarded_too_short`. A curadoria não valida a correção médica do conteúdo; ela valida estrutura, presença, tamanho e duplicidade.
 
 ## Regras por fonte
 
